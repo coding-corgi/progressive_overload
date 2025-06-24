@@ -4,6 +4,9 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "editor.formatOnSave": false,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+
 
   "editor.codeActionsOnSave": {
     //ESLint 자동 수정 기능
