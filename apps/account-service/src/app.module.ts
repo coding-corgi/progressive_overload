@@ -4,7 +4,6 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { \apps\accountService\src\authModule } from './apps/account-service/src/auth/apps/account-service/src/auth.module';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
@@ -20,12 +19,11 @@ import { AuthModule } from './auth/auth.module';
         type: 'mysql',
         url: configService.get<string>('DATABASE_URL'),
         synchronize: true,
-        // entities: [__dirname + `/../**/*.entity.js`],
         autoLoadEntities: true,
       }),
     }),
     UsersModule,
-    \apps\accountService\src\authModule, AuthModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
