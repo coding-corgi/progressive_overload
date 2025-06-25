@@ -68,4 +68,8 @@ export class UsersService {
       throw new NotFoundException(`id가 ${id}인 유저가 없습니다`);
     }
   }
+
+  async findOneById(id: number): Promise<User | null> {
+    return this.userRepository.findOneBy({ id });
+  }
 }

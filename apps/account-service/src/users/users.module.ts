@@ -9,4 +9,5 @@ import { User } from './entities/user.entity';
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService], // UsersService를 다른 모듈에서 사용할 수 있도록 export
+})
 export class UsersModule {}
