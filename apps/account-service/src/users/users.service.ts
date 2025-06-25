@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -14,14 +15,20 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { email } = createUserDto;
-
     const existedUser = await this.userRepository.findOneBy({ email });
 
     if (existedUser) {
       throw new ConflictException('이미 존재하는 이메일입니다');
     }
 
-    const createUser = this.userRepository.create(createUserDto);
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
+    const createUser = this.userRepository.create({
+      ...createUserDto,
+      password: hashedPassword,
+      email: email.toLowerCase(),
+    });
+
     return await this.userRepository.save(createUser);
   }
 

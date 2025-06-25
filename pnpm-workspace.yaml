@@ -1,2 +1,6 @@
 ignoredBuiltDependencies:
   - '@nestjs/core'
+  - '@swc/core'
+
+onlyBuiltDependencies:
+  - bcrypt
