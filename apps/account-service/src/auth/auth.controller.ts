@@ -20,4 +20,11 @@ export class AuthController {
     const user = req.user;
     return this.authService.refreshTokens(user);
   }
+
+  @Post('logout')
+  @UseGuards(AuthGuard('jwt')) // JWT 인증 가드 사용
+  async logout(@Req() req: Request & { user: User }) {
+    const user = req.user;
+    return await this.authService.logout(user);
+  }
 }

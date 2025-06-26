@@ -56,4 +56,9 @@ export class AuthService {
       accessToken: newAccessToken,
     };
   }
+
+  async logout(user: User): Promise<{ message: string }> {
+    await this.usersService.removeRefreshToken(user.id);
+    return { message: '로그아웃 성공' };
+  }
 }
