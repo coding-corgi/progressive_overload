@@ -12,7 +12,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly configService: ConfigService,
     private readonly usersService: UsersService,
   ) {
-    const secret = configService.get<string>('JWT_SECRET_KEY');
+    const secret = configService.get<string>('JWT_ACCESS_TOKEN_SECRET_KEY');
     if (!secret) {
       throw new Error('JWT_SECRET 환경 변수가 설정되어 있지 않습니다.');
     }
@@ -30,6 +30,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('사용자를 찾을 수 없습니다.');
     }
     const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword; // 사용자 정보를 반환하여 인증 성공
+    return userWithoutPassword;
   }
 }

@@ -13,4 +13,12 @@ export class User {
 
   @Column()
   password: string;
+
+  @Column({
+    name: 'hashed_refresh_token',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  hashedRefreshToken: string | null;
 }
