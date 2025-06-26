@@ -34,7 +34,48 @@ services:
       - "${RABBITMQ_MANAGEMENT_PORT}:15672"
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}q
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+
+
+  # 4. Account Service
+  account_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: account_service
+    depends_on:
+      - mysql_db
+    environment:
+      - DB_HOST=mysql_db
+      - DB_PORT=3306
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    ports:
+      - "3000:3000"
+    working_dir: /app/apps/account_service
+    command: pnpm run start:prod
+
+  # 5. challenge Service
+  challenge_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: challenge_service
+    depends_on:
+      - mysql_db
+      - account_service
+    environment:
+      - DB_HOST=mysql_db
+      - DB_PORT=3306
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - ACCOUNT_SERVICE_URL=http://account_service:3000
+    ports:
+      - "3001:3000"
+    working_dir: /app/apps/challenge_service
+    command: pnpm run start:prod
 
 volumes:
   db_data:

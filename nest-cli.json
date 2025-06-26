@@ -13,6 +13,15 @@
         "tsConfigPath": "apps/account-service/tsconfig.app.json",
         "webpack": true
       }
+    },
+    "challenge-service": {
+      "type": "application",
+      "root": "apps/challenge-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/challenge-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/challenge-service/tsconfig.app.json"
+      }
     }
   }
 }

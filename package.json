@@ -9,6 +9,7 @@
     "build": "nest build account-service",
     "start": "nest start",
     "start:dev": "nest start account-service --watch",
+    "start:챌": "nest start challenge-service --watch",
     "start:debug": "nest start account-service --debug --watch",
     "start:prod": "node dist/apps/account-service/main",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
@@ -20,6 +21,7 @@
     "test:e2e": "jest --config ./apps/account-service/test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -28,6 +30,7 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/typeorm": "^11.0.0",
+    "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
@@ -46,6 +49,7 @@
     "@nestjs/testing": "^11.0.1",
     "@swc/cli": "^0.6.0",
     "@swc/core": "^1.10.7",
+    "@types/axios": "^0.14.4",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
