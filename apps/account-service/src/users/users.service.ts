@@ -40,14 +40,8 @@ export class UsersService {
     return await this.userRepository.find();
   }
 
-  async findOne(id: number): Promise<User> {
-    const user = await this.userRepository.findOneBy({ id });
-
-    if (!user) {
-      throw new NotFoundException(`id가 ${id}인 유저가 없습니다`);
-    } else {
-      return user;
-    }
+  async findOne(id: number): Promise<User | null> {
+    return await this.userRepository.findOneBy({ id });
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {

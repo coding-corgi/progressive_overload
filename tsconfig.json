@@ -17,6 +17,8 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "baseUrl": "./",
-    "paths": {}
+    "paths": {
+      "@libs/*": ["libs/*"]
+    }
   }
 }

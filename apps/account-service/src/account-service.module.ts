@@ -5,6 +5,8 @@ import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { AccountEventsController } from './events/account.events.controller';
 
 @Module({
   imports: [
@@ -24,8 +26,26 @@ import { AuthModule } from './auth/auth.module';
     }),
     UsersModule,
     AuthModule,
+    ClientsModule.registerAsync([
+      {
+        name: 'CHALLENGE_SERVICE',
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('CHALLENGE_SERVICE_URL')!],
+            queue: 'challenge_queue',
+            queueOptions: {
+              durable: false,
+            },
+            noAck: false,
+          },
+        }),
+      },
+    ]),
   ],
-  controllers: [AppController],
+  controllers: [AppController, AccountEventsController],
   providers: [AppService],
 })
 export class AppModule {}
