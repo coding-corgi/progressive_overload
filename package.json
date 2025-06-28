@@ -8,7 +8,7 @@
   "scripts": {
     "build": "nest build account-service",
     "start": "nest start",
-    "start:dev": "nest start account-service --watch",
+    "start:어카": "nest start account-service --watch",
     "start:챌": "nest start challenge-service --watch",
     "start:debug": "nest start account-service --debug --watch",
     "start:prod": "node dist/apps/account-service/main",

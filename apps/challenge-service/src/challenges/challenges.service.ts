@@ -1,12 +1,12 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { UpdateChallengeDto } from './dto/update-challenge.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Challenge } from './entities/challenge.entity';
 import { Repository } from 'typeorm';
-import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class ChallengeService {
@@ -14,12 +14,14 @@ export class ChallengeService {
     @InjectRepository(Challenge)
     private readonly challengeService: Repository<Challenge>,
     private readonly httpService: HttpService,
+    @Inject('ACCOUNT_SERVICE') private readonly accountClient: ClientProxy,
   ) {}
 
   async create(createChallengeDto: CreateChallengeDto) {
     const { userId, title } = createChallengeDto;
     try {
-      await firstValueFrom(this.httpService.get(`/users/${userId}`));
+      this.accountClient.emit('validate_user', { userId });
+      console.log('[📤] validate_user emitted:', userId);
     } catch (err) {
       const axiosErr = err as AxiosError;
       if (axiosErr?.response?.status === 404) {

@@ -8,10 +8,14 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const configService = app.get(ConfigService);
+
+  console.log('✅ MQ 연결 시도 중 (account_queue)...');
+  console.log('💡 ACCOUNT_SERVICE_MQ_URL:', configService.get<string>('ACCOUNT_SERVICE_MQ_URL'));
+
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [configService.get<string>('CHALLENGE_SERVICE_URL')!],
+      urls: [configService.get<string>('ACCOUNT_SERVICE_MQ_URL')!],
       queue: 'account_queue',
       queueOptions: {
         durable: false,
@@ -29,8 +33,8 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(`🚀 Account Service listening on port ${process.env.PORT ?? 3000}`);
-  console.log(`📬 Connected to MQ at ${configService.get('CHALLENGE_SERVICE_URL')}`);
+  await app.listen(process.env.ACCOUNT_SERVICE_PORT ?? 3000);
+  console.log(`🚀 Account Service listening on port ${process.env.ACCOUNT_SERVICE_PORT}`);
+  console.log(`📬 Connected to MQ at ${configService.get('CHALLENGE_SERVICE_MQ_URL')}`);
 }
 bootstrap();

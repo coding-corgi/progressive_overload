@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './account-service.controller';
+import { AccountServiceController } from './account-service.controller';
 import { AppService } from './account-service.service';
 import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -34,18 +34,18 @@ import { AccountEventsController } from './events/account.events.controller';
         useFactory: (configService: ConfigService) => ({
           transport: Transport.RMQ,
           options: {
-            urls: [configService.get<string>('CHALLENGE_SERVICE_URL')!],
+            urls: [configService.get<string>('CHALLENGE_SERVICE_MQ_URL')!],
             queue: 'challenge_queue',
             queueOptions: {
               durable: false,
             },
-            noAck: false,
+            noAck: true,
           },
         }),
       },
     ]),
   ],
-  controllers: [AppController, AccountEventsController],
+  controllers: [AccountServiceController, AccountEventsController],
   providers: [AppService],
 })
 export class AppModule {}

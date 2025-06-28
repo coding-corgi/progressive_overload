@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ChallengeModule } from './challenges/challenges.module';
+import { ChallengeEventsController } from './events/challenges.events.controller';
 
 @Module({
   imports: [
@@ -25,9 +26,9 @@ import { ChallengeModule } from './challenges/challenges.module';
       baseURL: process.env.ACCOUNT_SERVICE_URL,
       timeout: 3000,
     }),
-    ChallengeModule, //여기
+    ChallengeModule,
   ],
-  controllers: [ChallengeServiceController],
+  controllers: [ChallengeServiceController, ChallengeEventsController],
   providers: [ChallengeServiceService],
 })
 export class ChallengeServiceModule {}
