@@ -3,7 +3,7 @@ import { EventPattern, Payload } from '@nestjs/microservices';
 
 @Controller()
 export class ChallengeEventsController {
-  @EventPattern('validate_user')
+  @EventPattern('user_validated')
   async handleValidateUser(@Payload() Payload: { userId: string }) {
     console.log(`user validated: ${Payload.userId}`);
     //Todo 챌린지 생성 처리 로그저장
