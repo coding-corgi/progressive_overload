@@ -11,13 +11,15 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [configService.get<string>('ACCOUNT_SERVICE_URL')!],
+      urls: [configService.get<string>('ACCOUNT_SERVICE_MQ_URL')!],
       queue: 'challenge_queue',
       queueOptions: {
         durable: false,
       },
     },
   });
+
+  await app.startAllMicroservices();
 
   app.useGlobalPipes(
     new ValidationPipe({

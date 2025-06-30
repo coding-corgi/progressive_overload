@@ -11,8 +11,6 @@ export class AccountEventsController {
 
   @EventPattern('validate_user')
   async handleValidateUser(@Payload() payload: { userId: string }) {
-    console.log('[👂] Received validate_user:', payload.userId);
-
     const userId = payload.userId;
     const user = await this.usersService.findOne(+userId);
 
