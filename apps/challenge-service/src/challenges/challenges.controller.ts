@@ -1,7 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+  HttpCode,
+  HttpStatus,
+  Query,
+} from '@nestjs/common';
 import { ChallengeService } from './challenges.service';
 import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { UpdateChallengeDto } from './dto/update-challenge.dto';
+import { getRecentChallengesLogs } from '../redis/challenges.redis';
 
 @Controller('challenges')
 export class ChallengeController {
@@ -31,5 +44,20 @@ export class ChallengeController {
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     return this.challengeService.remove(+id);
+  }
+
+  @Get('logs/:userId')
+  async getChallengeLogs(@Param('userId') userId: string, @Query('count') count?: string) {
+    const logs = await getRecentChallengesLogs(userId, count ? parseInt(count) : 10);
+    return {
+      userId,
+      logs: logs.map((log) => {
+        const [challengeId, createdAt] = log.split('|');
+        return {
+          challengeId,
+          createdAt,
+        };
+      }),
+    };
   }
 }

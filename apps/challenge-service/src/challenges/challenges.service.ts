@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
 import { ClientProxy } from '@nestjs/microservices';
+import { logChallengecreation } from '../redis/challenges.redis';
 
 @Injectable()
 export class ChallengeService {
@@ -33,8 +34,16 @@ export class ChallengeService {
     if (challenge) {
       throw new ConflictException('이미 존재하는 챌린지입니다');
     }
-    const newChallenge = this.challengeService.create(createChallengeDto);
-    return await this.challengeService.save(newChallenge);
+
+    try {
+      const newChallenge = this.challengeService.create(createChallengeDto);
+
+      const save = await this.challengeService.save(newChallenge);
+      await logChallengecreation(save.id, userId);
+      return save;
+    } catch {
+      throw new ConflictException('챌린지 생성에 실패했습니다. 다시 시도해주세요.');
+    }
   }
 
   async findAll() {
