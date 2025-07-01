@@ -1,0 +1,19 @@
+
+config:
+  target: 'http://localhost:3001'
+  phases:
+    - name: 'Warmup'
+      duration: 5
+      arrivalRate: 10
+    - name: 'Peak'
+      duration: 15
+      arrivalRate: 100
+  plugins:
+    metrics-by-endpoint: {}
+scenarios:
+  - name: 'Challenge API flow'
+    flow:
+      - get:
+          url: '/challenges'
+      - get:
+          url: '/challenges/logs/4?count=10'

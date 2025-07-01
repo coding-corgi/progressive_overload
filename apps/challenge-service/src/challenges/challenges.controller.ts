@@ -14,11 +14,14 @@ import {
 import { ChallengeService } from './challenges.service';
 import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { UpdateChallengeDto } from './dto/update-challenge.dto';
-import { getRecentChallengesLogs } from '../redis/challenges.redis';
+import { ChallengeLogsService } from '../redis/challenges.redis';
 
 @Controller('challenges')
 export class ChallengeController {
-  constructor(private readonly challengeService: ChallengeService) {}
+  constructor(
+    private readonly challengeService: ChallengeService,
+    private readonly challengsLogsService: ChallengeLogsService, // Assuming this service is imported correctly
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -48,16 +51,30 @@ export class ChallengeController {
 
   @Get('logs/:userId')
   async getChallengeLogs(@Param('userId') userId: string, @Query('count') count?: string) {
-    const logs = await getRecentChallengesLogs(userId, count ? parseInt(count) : 10);
+    const logs = await this.challengsLogsService.getRecentChallengesLogs(userId, count ? parseInt(count) : 10);
     return {
       userId,
       logs: logs.map((log) => {
-        const [challengeId, createdAt] = log.split('|');
         return {
-          challengeId,
-          createdAt,
+          challengeId: log.id,
+          createdAt: typeof log.createdAt === 'string' ? log.createdAt : log.createdAt.toISOString(),
         };
       }),
     };
   }
+
+  // @Get('logs/:userId')
+  // async getChallengeLogs(@Param('userId') userId: string, @Query('count') count?: string) {
+  //   const logs = await getRecentChallengesLogs(userId, count ? parseInt(count) : 10);
+  //   return {
+  //     userId,
+  //     logs: logs.map((log) => {
+  //       const [challengeId, createdAt] = log.split('|');
+  //       return {
+  //         challengeId,
+  //         createdAt,
+  //       };
+  //     }),
+  //   };
+  // }
 }

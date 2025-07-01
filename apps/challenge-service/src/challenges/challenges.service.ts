@@ -7,15 +7,17 @@ import { Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
 import { ClientProxy } from '@nestjs/microservices';
-import { logChallengecreation } from '../redis/challenges.redis';
+import { ChallengeLogsService } from '../redis/challenges.redis';
+// import { logChallengecreation } from '../redis/challenges.redis';
 
 @Injectable()
 export class ChallengeService {
   constructor(
     @InjectRepository(Challenge)
-    private readonly challengeService: Repository<Challenge>,
+    private readonly challengeRepository: Repository<Challenge>,
     private readonly httpService: HttpService,
     @Inject('ACCOUNT_SERVICE') private readonly accountClient: ClientProxy,
+    private readonly challengeLogService: ChallengeLogsService,
   ) {}
 
   async create(createChallengeDto: CreateChallengeDto) {
@@ -30,16 +32,16 @@ export class ChallengeService {
       }
     }
 
-    const challenge = await this.challengeService.findOneBy({ title });
+    const challenge = await this.challengeRepository.findOneBy({ title });
     if (challenge) {
       throw new ConflictException('이미 존재하는 챌린지입니다');
     }
 
     try {
-      const newChallenge = this.challengeService.create(createChallengeDto);
+      const newChallenge = this.challengeRepository.create(createChallengeDto);
+      // await logChallengecreation(save.id, userId);
 
-      const save = await this.challengeService.save(newChallenge);
-      await logChallengecreation(save.id, userId);
+      const save = await this.challengeRepository.save(newChallenge);
       return save;
     } catch {
       throw new ConflictException('챌린지 생성에 실패했습니다. 다시 시도해주세요.');
@@ -47,11 +49,12 @@ export class ChallengeService {
   }
 
   async findAll() {
-    return await this.challengeService.find();
+    console.log('[📥] findAll called');
+    return await this.challengeRepository.find();
   }
 
   async findOne(id: number) {
-    const challenge = await this.challengeService.findOneBy({ id });
+    const challenge = await this.challengeRepository.findOneBy({ id });
     if (!challenge) {
       throw new NotFoundException(`id가 ${id}인 챌린지가 없습니다`);
     }
@@ -59,16 +62,16 @@ export class ChallengeService {
   }
 
   async update(id: number, updateChallengeDto: UpdateChallengeDto) {
-    const challenge = await this.challengeService.findOneBy({ id });
+    const challenge = await this.challengeRepository.findOneBy({ id });
     if (!challenge) {
       throw new NotFoundException(`id가 ${id}인 챌린지가 없습니다`);
     }
     const updatedChallenge = { ...challenge, ...updateChallengeDto };
-    return await this.challengeService.save(updatedChallenge);
+    return await this.challengeRepository.save(updatedChallenge);
   }
 
   async remove(id: number) {
-    const result = await this.challengeService.delete(id);
+    const result = await this.challengeRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`id가 ${id}인 챌린지가 없습니다`);
     }

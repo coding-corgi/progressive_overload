@@ -6,6 +6,7 @@ import { Challenge } from './entities/challenge.entity';
 import { HttpModule } from '@nestjs/axios';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ChallengeLogsService } from '../redis/challenges.redis';
 
 @Module({
   imports: [
@@ -31,6 +32,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     ]),
   ],
   controllers: [ChallengeController],
-  providers: [ChallengeService],
+  providers: [ChallengeService, ChallengeLogsService],
 })
 export class ChallengeModule {}
