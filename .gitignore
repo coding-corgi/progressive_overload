@@ -2,6 +2,8 @@
 /dist
 /node_modules
 /build
+README.md
+
 
 # Logs
 logs
@@ -11,6 +13,8 @@ pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+result-with-redis.json
+result-without-redis.json
 
 # OS
 .DS_Store
@@ -35,6 +39,10 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
+
+#scripts
+lib/scripts/
+
 # dotenv environment variable files
 .env
 db_data/
@@ -42,6 +50,7 @@ db_data/
 .env.test.local
 .env.production.local
 .env.local
+redis_data/
 
 # temp directory
 .temp

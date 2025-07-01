@@ -3,17 +3,21 @@ config:
   target: 'http://localhost:3001'
   phases:
     - name: 'Warmup'
-      duration: 5
+      duration: 10
       arrivalRate: 10
+    - name: 'Normal'
+      duration: 30
+      arrivalRate: 50
     - name: 'Peak'
-      duration: 15
-      arrivalRate: 100
+      duration: 30
+      arrivalRate: 500
+    - name: 'Overload'
+      duration: 20
+      arrivalRate: 3000
   plugins:
     metrics-by-endpoint: {}
 scenarios:
   - name: 'Challenge API flow'
     flow:
-      - get:
-          url: '/challenges'
       - get:
           url: '/challenges/logs/4?count=10'

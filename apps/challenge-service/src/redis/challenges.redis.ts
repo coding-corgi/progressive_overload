@@ -38,7 +38,6 @@ export class ChallengeLogsService {
     return logs;
   }
 
-  //deprecated
   async logChallengecreation(challengeId: number, userId: string | number) {
     const timestamp = new Date().toISOString();
     const key = `${CHALLENGE_LOG_PREFIX}:${userId}`;
@@ -46,14 +45,3 @@ export class ChallengeLogsService {
     await redis.lpush(key, value);
   }
 }
-// export const logChallengecreation = async (challengeId: number, userId: string | number) => {
-//   const timestamp = new Date().toISOString();
-//   const key = `${CHALLENGE_LOG_PREFIX}:${userId}`;
-//   const value = `${challengeId}|${timestamp}`;
-//   await redis.lpush(key, value);
-// };
-
-// export const getRecentChallengesLogs = async (userId: string, count: number = 10) => {
-//   const key = `${CHALLENGE_LOG_PREFIX}:${userId}`;
-//   return await redis.lrange(key, 0, count - 1);
-// };

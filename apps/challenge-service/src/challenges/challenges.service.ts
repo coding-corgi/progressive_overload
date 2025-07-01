@@ -8,7 +8,6 @@ import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
 import { ClientProxy } from '@nestjs/microservices';
 import { ChallengeLogsService } from '../redis/challenges.redis';
-// import { logChallengecreation } from '../redis/challenges.redis';
 
 @Injectable()
 export class ChallengeService {
@@ -39,9 +38,8 @@ export class ChallengeService {
 
     try {
       const newChallenge = this.challengeRepository.create(createChallengeDto);
-      // await logChallengecreation(save.id, userId);
-
       const save = await this.challengeRepository.save(newChallenge);
+      await this.challengeLogService.logChallengecreation(save.id, userId);
       return save;
     } catch {
       throw new ConflictException('챌린지 생성에 실패했습니다. 다시 시도해주세요.');

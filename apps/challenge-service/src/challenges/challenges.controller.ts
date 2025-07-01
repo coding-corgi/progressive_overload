@@ -62,19 +62,4 @@ export class ChallengeController {
       }),
     };
   }
-
-  // @Get('logs/:userId')
-  // async getChallengeLogs(@Param('userId') userId: string, @Query('count') count?: string) {
-  //   const logs = await getRecentChallengesLogs(userId, count ? parseInt(count) : 10);
-  //   return {
-  //     userId,
-  //     logs: logs.map((log) => {
-  //       const [challengeId, createdAt] = log.split('|');
-  //       return {
-  //         challengeId,
-  //         createdAt,
-  //       };
-  //     }),
-  //   };
-  // }
 }
