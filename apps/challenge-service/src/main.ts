@@ -32,4 +32,4 @@ async function bootstrap() {
   await app.listen(process.env.CHALLENGE_SERVICE_PORT ?? 3000);
   console.log(`🚀 Account Service listening on port ${process.env.CHALLENGE_SERVICE_PORT}`);
 }
-bootstrap();
+void bootstrap();

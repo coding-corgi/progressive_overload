@@ -4,11 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy, StrategyOptions } from 'passport-jwt';
 import { UsersService } from '../../users/users.service';
 import { Request } from 'express';
-
-interface TokenPayload {
-  sub: number; // 사용자 ID
-  email: string;
-}
+import { TokenPayload } from '../interfaces/token-payload.interface';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
@@ -44,6 +40,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
       throw new UnauthorizedException(' 리프레쉬 토큰이 유효하지 않습니다.');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }

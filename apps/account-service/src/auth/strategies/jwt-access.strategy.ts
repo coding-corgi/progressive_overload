@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../../users/users.service';
+import { TokenPayload } from '../interfaces/token-payload.interface';
 
 @Injectable() // JWT 전략을 구현하는 클래스
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -24,11 +25,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
-    const user = await this.usersService.findOneById(payload.sub);
+  async validate(payload: TokenPayload) {
+    const user = await this.usersService.findOneById(Number(payload.sub));
     if (!user) {
       throw new UnauthorizedException('사용자를 찾을 수 없습니다.');
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }

@@ -37,4 +37,4 @@ async function bootstrap() {
   console.log(`🚀 Account Service listening on port ${process.env.ACCOUNT_SERVICE_PORT}`);
   console.log(`📬 Connected to MQ at ${configService.get('CHALLENGE_SERVICE_MQ_URL')}`);
 }
-bootstrap();
+void bootstrap();
