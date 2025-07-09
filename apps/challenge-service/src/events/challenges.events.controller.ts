@@ -1,12 +1,34 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
+import { ApiTags } from '@nestjs/swagger';
+import { ChallengeLogsService } from '../redis/challenges.redis';
+import { ChallengeService } from '../challenges/challenges.service';
 
+@ApiTags('events')
 @Controller()
 export class ChallengeEventsController {
+  constructor(
+    private readonly challengeService: ChallengeService,
+    private readonly challengeLogService: ChallengeLogsService,
+  ) {}
+
   @EventPattern('user_validated')
-  handleValidateUser(@Payload() Payload: { userId: string }) {
-    console.log(`user validated: ${Payload.userId}`);
-    //Todo 챌린지 생성 처리 로그저장
+  async handleValidateUser(@Payload() payload: { userId: string }) {
+    console.log('[📥] user_validated 이벤트 수신:', payload.userId);
+
+    const dto = await this.challengeLogService.getCachedPendingChallenge(payload.userId);
+    if (!dto) {
+      console.warn(`[!] user_validated but no pending DTO for user ${payload.userId}`);
+      return;
+    }
+
+    const exists = await this.challengeService.findByTitle(dto.title);
+    if (exists) {
+      console.log(`[⚠] 챌린지 중복됨: ${dto.title}`);
+      return;
+    }
+
+    await this.challengeService.createForValidatedUser(dto);
   }
 
   @EventPattern('user_not_found')

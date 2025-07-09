@@ -1,11 +1,10 @@
-import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { UpdateChallengeDto } from './dto/update-challenge.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Challenge } from './entities/challenge.entity';
 import { Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
-import { AxiosError } from 'axios';
 import { ClientProxy } from '@nestjs/microservices';
 import { ChallengeLogsService } from '../redis/challenges.redis';
 
@@ -20,30 +19,18 @@ export class ChallengeService {
   ) {}
 
   async create(createChallengeDto: CreateChallengeDto) {
-    const { userId, title } = createChallengeDto;
-    try {
-      this.accountClient.emit('validate_user', { userId });
-      console.log('[📤] validate_user emitted:', userId);
-    } catch (err) {
-      const axiosErr = err as AxiosError;
-      if (axiosErr?.response?.status === 404) {
-        throw new NotFoundException(`userId가 ${userId}인 사용자가 없습니다`);
-      }
-    }
+    const { userId } = createChallengeDto;
 
-    const challenge = await this.challengeRepository.findOneBy({ title });
-    if (challenge) {
-      throw new ConflictException('이미 존재하는 챌린지입니다');
-    }
+    // 1️⃣ Redis 등에 DTO 캐시 저장 (TTL 설정, 임시 저장)
+    await this.challengeLogService.cachePendingChallenge(userId, createChallengeDto);
 
-    try {
-      const newChallenge = this.challengeRepository.create(createChallengeDto);
-      const save = await this.challengeRepository.save(newChallenge);
-      await this.challengeLogService.logChallengecreation(save.id, userId);
-      return save;
-    } catch {
-      throw new ConflictException('챌린지 생성에 실패했습니다. 다시 시도해주세요.');
-    }
+    // 2️⃣ 유저 검증 이벤트 emit
+    this.accountClient.emit('validate_user', { userId });
+    console.log('[📤] validate_user emitted:', userId);
+
+    return {
+      message: '유저 검증 요청이 전송되었습니다. 유효 시 챌린지 생성이 진행됩니다.',
+    };
   }
 
   async findAll() {
@@ -76,5 +63,18 @@ export class ChallengeService {
     return {
       message: `id가 ${id}인 챌린지가 삭제되었습니다`,
     };
+  }
+
+  async createForValidatedUser(createChallengeDto: CreateChallengeDto) {
+    const newChallenge = this.challengeRepository.create(createChallengeDto);
+    const savedChallenge = await this.challengeRepository.save(newChallenge);
+    console.log('[✅] 챌린지 생성 완료:', savedChallenge);
+
+    await this.challengeLogService.logChallengecreation(savedChallenge.id, createChallengeDto.userId);
+    return savedChallenge;
+  }
+
+  async findByTitle(title: string) {
+    return await this.challengeRepository.findOneBy({ title });
   }
 }
