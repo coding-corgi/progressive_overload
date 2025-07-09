@@ -19,7 +19,6 @@
 
 
 ## 3. 기술 스택 & 인프라
-![스킬 drawio](https://github.com/user-attachments/assets/b47b3e0a-f92c-424d-a68e-939e7a484805)
 
 |  기술 | 목적 및 사용 이유 |
 |  :--- | :--- |
@@ -35,6 +34,7 @@
 |  `Jest` | 단위(Unit), 통합(Integration), E2E 테스트를 통한 코드 안정성 확보 |
 |  `Artillery` | 부하 테스트, 실성능 측정 |
 
+![스킬 drawio](https://github.com/user-attachments/assets/b47b3e0a-f92c-424d-a68e-939e7a484805)
 
 
 ## 4. 실험/성능 지표 (캐시 도입 전후)
