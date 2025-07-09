@@ -15,12 +15,11 @@
 
 
 ## 2. 아키텍처 다이어그램
-
-![제목 없는 다이어그램 drawio](https://github.com/user-attachments/assets/c1ba2361-d734-4b12-bc88-4ba93b495bd9)
-
+![제목 없는 다이어그램 drawio (1)](https://github.com/user-attachments/assets/f7e08567-977a-49a3-bb65-0b6aa1230dbb)
 
 
 ## 3. 기술 스택 & 인프라
+![스킬 drawio](https://github.com/user-attachments/assets/b47b3e0a-f92c-424d-a68e-939e7a484805)
 
 |  기술 | 목적 및 사용 이유 |
 |  :--- | :--- |
@@ -35,7 +34,6 @@
 |  `GitHub Actions` | CICD, 빌드/테스트/배포 자동화 |
 |  `Jest` | 단위(Unit), 통합(Integration), E2E 테스트를 통한 코드 안정성 확보 |
 |  `Artillery` | 부하 테스트, 실성능 측정 |
-
 
 
 
@@ -70,17 +68,12 @@ keyspace_misses:           72,658
 total_commands_processed: 122,563
 total_error_replies:        3,107
 ```
-
----
-
 #### 4.3. 실험 환경 및 방법
 
 - **Docker compose** 기반 단일 서버(Ryzen 7 2700x, 32GB RAM)
 - **DB/Redis/서비스 모두 컨테이너**
 - **부하테스트:** Artillery(WarmupPeakOverload, 최대 3,000 RPS/20초)
 - **캐시 조건:** Redis TTL 30초, DB/Redis 단일 인스턴스
-
----
 
 #### 4.4. 실험 결과 요약/인사이트
 
