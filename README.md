@@ -38,11 +38,10 @@
 |  `Jest` | 단위(Unit), 통합(Integration), E2E 테스트를 통한 코드 안정성 확보 |
 |  `Artillery` | 부하 테스트, 실성능 측정 |
 
----
+
 
 ![스킬 drawio](https://github.com/user-attachments/assets/b47b3e0a-f92c-424d-a68e-939e7a484805)
 
----
 
 ## 4. 실험/성능 지표 (캐시 도입 전후)
 
@@ -66,7 +65,6 @@
 > **캐시 미적용:** 모든 요청이 DB로 → 응답 p95=6초, p99=8.7초까지 지연  
 > **캐시 적용:** 첫 miss 후 거의 모든 요청이 redis에서 반환 → 평균 1초 이하로 감소
 
----
 
 #### 4.2. Redis 캐시 info 결과
 
@@ -78,7 +76,6 @@ total_commands_processed: 122,563
 total_error_replies:        3,107
 ```
 
----
 
 #### 4.3. 실험 환경 및 방법
 > 모든 실험은 **Docker compose** 기반 단일 서버(Ryzen 7 2700x, 32GB RAM) 환경
