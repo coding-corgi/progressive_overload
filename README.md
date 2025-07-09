@@ -86,11 +86,12 @@ total_error_replies:        3,107
 
 
 ## 5. 실행/테스트
- -- 스웨거 넣어야함 --- 
-- **Swagger API 문서:** `http://localhost:3000/api-docs`  
-  (API 스펙/직접 테스트/예시 요청/응답 캡처 첨부)
-- **부하테스트/테스트 자동화 스크립트 제공**
 
+### 🟦 Swagger API 문서
+
+- Account Service: http://localhost:3000/api-docs
+- Challenge Service: http://localhost:3001/api-docs
+- 각 서비스에서 엔드포인트/요청·응답 예시/테스트 가능!
 
 ## 6. 회고/느낀점
 
