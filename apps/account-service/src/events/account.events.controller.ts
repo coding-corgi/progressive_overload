@@ -1,7 +1,9 @@
 import { Controller, Inject } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { ClientProxy, EventPattern, Payload } from '@nestjs/microservices';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('events')
 @Controller()
 export class AccountEventsController {
   constructor(
