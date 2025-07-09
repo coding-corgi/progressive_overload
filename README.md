@@ -91,7 +91,13 @@ total_error_replies:        3,107
 
 - Account Service: http://localhost:3000/api-docs
 - Challenge Service: http://localhost:3001/api-docs
-- 각 서비스에서 엔드포인트/요청·응답 예시/테스트 가능!
+- 각 서비스에서 엔드포인트/요청·응답 예시/테스트 가능
+<p float="left">
+  <img src="https://github.com/user-attachments/assets/dfd0acf2-58c8-4f13-933f-b665087a1b7b" width="49%"/>
+  <img src="https://github.com/user-attachments/assets/029704e3-a4ef-4ad1-a102-d1a4b4ab2e9b" width="49%"/>
+</p>
+
+
 
 ## 6. 회고/느낀점
 
