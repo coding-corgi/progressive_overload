@@ -33,5 +33,6 @@ import { ChallengeLogsService } from '../redis/challenges.redis';
   ],
   controllers: [ChallengeController],
   providers: [ChallengeService, ChallengeLogsService],
+  exports: [ChallengeService, ChallengeLogsService],
 })
 export class ChallengeModule {}
