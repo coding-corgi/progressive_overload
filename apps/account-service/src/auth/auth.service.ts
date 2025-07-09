@@ -52,8 +52,15 @@ export class AuthService {
       secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET_KEY'),
       expiresIn: this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRATION') || '1h',
     });
+
+    const newRefreshToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET_KEY'),
+      expiresIn: this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRATION') || '7d',
+    });
+
     return {
       accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
     };
   }
 

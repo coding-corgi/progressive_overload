@@ -1,16 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
-import { App } from 'supertest/types';
 import { AppModule } from '../src/account-service.module';
+import request from 'supertest';
+import { Response } from 'supertest';
+import { Server } from 'http';
 
 interface LoginResponse {
   accessToken: string;
   refreshToken: string;
 }
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+describe('AuthController (e2e)', () => {
+  // let app: INestApplication<App>;
+  let app: INestApplication;
+  let refreshToken: string;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -21,29 +24,38 @@ describe('AppController (e2e)', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
 
-    await request(app.getHttpServer()).post('/users').send({
-      email: 'test@test.com',
+    const server = app.getHttpServer() as Server;
+    await request(server).post('/users').send({
+      email: 'refresh@test.com',
       password: 'test1234',
       name: 'Test User',
     });
-  });
 
-  afterAll(async () => {
-    await app.close();
-  });
-
-  it('/auth/login (POST) -로그인 성공', async () => {
-    const response = await request(app.getHttpServer())
+    const loginResponse: Response = await request(server)
       .post('/auth/login')
       .send({
-        email: 'test@test.com',
+        email: 'refresh@test.com',
         password: 'test1234',
       })
+      .expect(201);
+
+    refreshToken = (loginResponse.body as LoginResponse).refreshToken;
+  });
+
+  it('/auth/refresh (POST)- ', async () => {
+    const server = app.getHttpServer() as Server;
+    const response = await request(server)
+      .post('/auth/refresh')
+      .set('Authorization', `Bearer ${refreshToken}`)
       .expect(201);
 
     const body = response.body as LoginResponse;
 
     expect(body.accessToken).toBeDefined();
     expect(body.refreshToken).toBeDefined();
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 });

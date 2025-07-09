@@ -4,6 +4,9 @@
 /build
 README.md
 
+#Redis snapshots
+redis_data/
+*.rdb
 
 # Logs
 logs
