@@ -17,6 +17,10 @@
 ## 2. 아키텍처 다이어그램
 ![제목 없는 다이어그램 drawio (1)](https://github.com/user-attachments/assets/f7e08567-977a-49a3-bb65-0b6aa1230dbb)
 
+- **Account**: 유저, 인증, REST API, MySQL
+- **Challenge**: 챌린지/운동기록/성장지표, MySQL+Redis, MQ 이벤트 기반 연동
+- **RabbitMQ**: 서비스 간 비동기 이벤트 메시징 (Loose Coupling)
+
 
 ## 3. 기술 스택 & 인프라
 
@@ -34,10 +38,14 @@
 |  `Jest` | 단위(Unit), 통합(Integration), E2E 테스트를 통한 코드 안정성 확보 |
 |  `Artillery` | 부하 테스트, 실성능 측정 |
 
+---
+
 ![스킬 drawio](https://github.com/user-attachments/assets/b47b3e0a-f92c-424d-a68e-939e7a484805)
 
+---
 
 ## 4. 실험/성능 지표 (캐시 도입 전후)
+
 #### 4.1. Redis 캐시 적용 전/후 성능 변화
 
 | 지표                       | 캐시 미적용 (DB 직접 조회) | 캐시 적용 (1st miss, 이후 hit) |
@@ -58,6 +66,7 @@
 > **캐시 미적용:** 모든 요청이 DB로 → 응답 p95=6초, p99=8.7초까지 지연  
 > **캐시 적용:** 첫 miss 후 거의 모든 요청이 redis에서 반환 → 평균 1초 이하로 감소
 
+---
 
 #### 4.2. Redis 캐시 info 결과
 
@@ -68,15 +77,13 @@ keyspace_misses:           72,658
 total_commands_processed: 122,563
 total_error_replies:        3,107
 ```
+
+---
+
 #### 4.3. 실험 환경 및 방법
-
-
-
-
-> 모든 실험은 **Docker compose** 기반의 단일 서버(Ryzen 7 2700x, 32GB RAM) 환경에서
-> **DB/Redis/서비스**  모두 컨테이너로 분리하여
-> Artillery로 최대 3,000 RPS/20초) 부하를 걸어
-> **Redis 캐시** 는 TTL 30초, 단일 인스턴스 기준으로 측정하였습니다
+> 모든 실험은 **Docker compose** 기반 단일 서버(Ryzen 7 2700x, 32GB RAM) 환경
+> **DB/Redis/서비스**  컨테이너 분리, Artillery로 최대 3,000 RPS/20초 부하
+> **Redis 캐시 TTL** 30초, 단일 인스턴스 기준
 
 
 #### 4.4. 실험 결과 요약/인사이트
