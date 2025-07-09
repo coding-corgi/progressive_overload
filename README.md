@@ -1,51 +1,51 @@
 
 # Progressive Overload 프로젝트
 
+## 1. 프로젝트 개요
 
-## 1. 도메인 설계 (Domain-Driven Design)
+> **실무에서 경험한 핵심 백엔드 기술을  
+> 설계→구현→성능 실험→지표→문서화까지  
+> ‘실제 서비스’ 수준으로 증명하는 포트폴리오**
 
-
-#### 1.1. 유비쿼터스 언어 (Ubiquitous Language)
-
-
-| 단어 (영문/한글) | 설명 (초안) | 비고 |
-| :--- | :--- | :--- |
-| **User** (유저) | 서비스를 사용하는 회원. | 암호화 인증  |
-| **Challenge** (챌린지) | "30일 벤치프레스 100kg 달성"과 같은 구체적인 목표. 시작일/종료일이 있음. |  |
-| **Exercise** (운동) | 벤치프레스, 스쿼트 등 개별 운동 종목. | 운동 부위(가슴/등/하체), 장비(바벨/덤벨) 등의 속성 추가 |
-| **Routine** (루틴) | 특정 챌린지의 특정일에 수행해야 할 운동의 조합. (e.g., 월요일 루틴) | |
-| **PerformanceLog** (수행기록) | "2023-10-27, 벤치프레스, 80kg, 5회, 3세트" 같은 실제 운동 수행 데이터. | 대용량 트래픽 처리 |
-| **GrowthMetric** (성장지표) | 수행기록을 바탕으로 계산된 값. (e.g., 총 볼륨, 1RM 추정치) | Redis에 캐싱 빠르게 조회 |
-| **Feed** (피드) | 사용자의 주요 활동(챌린지 시작, 목표 달성 등)이 올라오는 소셜 타임라인. | |
-| **CheerUp** (응원) | 다른 사용자의 피드에 보내는 '좋아요' 같은 긍정적 상호작용. | |
+- **핵심 도메인**
+  - `Account Service` : 회원가입/인증/유저 관리 (MySQL)
+  - `Challenge Service` : 챌린지 생성/운동 기록/성장지표 관리 (MySQL + Redis)
+- **MSA/DDD 아키텍처 기반, 컨테이너 환경(Docker)에서 실험**
+- **모든 핵심 흐름/실험/지표 직접 설계·구현·측정**
 
 
-#### 1.2. 바운디드 컨텍스트 (Bounded Context)
+## 2. 아키텍처 다이어그램
+![제목 없는 다이어그램 drawio (1)](https://github.com/user-attachments/assets/f7e08567-977a-49a3-bb65-0b6aa1230dbb)
+
+- **Account**: 유저, 인증, REST API, MySQL
+- **Challenge**: 챌린지/운동기록/성장지표, MySQL+Redis, MQ 이벤트 기반 연동
+- **RabbitMQ**: 서비스 간 비동기 이벤트 메시징 (Loose Coupling)
 
 
-| 컨텍스트 (서비스명) | 포함하는 언어들 | 핵심 책임 (Responsibilities) |
-| :--- | :--- | :--- |
-| **Account Context** | `User` | 회원가입, 인증(로그인), 인가, 프로필 관리 |
-| **Challenge Context** | `Challenge`, `Exercise`, `Routine`, `PerformanceLog`, `GrowthMetric` | 챌린지 생성/참여/관리, 운동 기록, 성장 지표 계산 |
-| **Social Context** | `Feed`, `CheerUp`, `User` (참조) | 팔로우/팔로워 관리, 피드 생성 및 조회, 응원/댓글 기능 |
-| **Notification Context** | (이벤트 수신) | 웹소켓 기반 실시간 알림, (향후) 이메일/푸시 알림 |
+## 3. 기술 스택 & 인프라
+
+|  기술 | 목적 및 사용 이유 |
+|  :--- | :--- |
+| `TypeScript`  | 타입 안정성, 유지보수성, 대규모 서비스 적합  |
+|  `NestJS` | 모듈화, DI, MSA/DDD 구현에 용이한 아키텍처 |
+|  `MySQL` | 관계형 데이터, 트랜잭션, 일관성|
+|  `TypeORM` |  객체지향적 ORM, DB 추상화, Migration |
+|  `Redis` | 캐시(성장 지표, 인기 피드), QPS 병목 해소로 응답 속도 향상 |
+|  `RabbitMQ` | 서비스 간 비동기 이벤트 통신(EDA), 확장성 |
+|  `Docker` | 로컬/서버 동일 운영환경, 환경 일관성|
+|  `Docker Compose` | 다중 서비스, 빠른 로컬 통합 테스트 |
+|  `GitHub Actions` | CICD, 빌드/테스트/배포 자동화 |
+|  `Jest` | 단위(Unit), 통합(Integration), E2E 테스트를 통한 코드 안정성 확보 |
+|  `Artillery` | 부하 테스트, 실성능 측정 |
 
 
-## 2. 기술 스택 (Tech Stack)
 
-| 구분 | 기술 | 목적 및 사용 이유 |
-| :--- | :--- | :--- |
-| **언어/프레임워크** | `TypeScript`, `NestJS` | 타입 안정성 확보 및 DDD, MSA 구현에 용이한 아키텍처 |
-| **데이터베이스** | `MySQL`, `TypeORM` | 핵심 데이터 저장을 위한 관계형 데이터베이스 및 ORM |
-| | `Redis` | 성장 지표, 인기 피드 등 자주 조회되는 데이터 캐싱으로 응답 속도 향상 |
-| **메시지 브로커** | `RabbitMQ` | 서비스 간 비동기 이벤트 통신을 통한 시스템 결합도 감소 (EDA 구현) |
-| **개발/배포 환경** | `Docker`, `Docker Compose` | 로컬 개발 환경의 일관성 유지 및 간편한 서비스 관리 |
-| | `GitHub Actions` | 테스트 및 빌드 자동화를 통한 CI(Continuous Integration) 구축 |
-| **테스트** | `Jest` | 단위(Unit), 통합(Integration), E2E 테스트를 통한 코드 안정성 확보 |
+![스킬 drawio](https://github.com/user-attachments/assets/b47b3e0a-f92c-424d-a68e-939e7a484805)
 
 
-## 3. 성능 실험 및 캐시 효과 (Load Test & Cache Metrics)
-#### 3.1. Redis 캐시 적용 전/후 성능 변화
+## 4. 실험/성능 지표 (캐시 도입 전후)
+
+#### 4.1. Redis 캐시 적용 전/후 성능 변화
 
 | 지표                       | 캐시 미적용 (DB 직접 조회) | 캐시 적용 (1st miss, 이후 hit) |
 |----------------------------|--------------------------|-------------------------------|
@@ -65,15 +65,8 @@
 > **캐시 미적용:** 모든 요청이 DB로 → 응답 p95=6초, p99=8.7초까지 지연  
 > **캐시 적용:** 첫 miss 후 거의 모든 요청이 redis에서 반환 → 평균 1초 이하로 감소
 
----
-**실험환경**: Docker compose 기반 단일 서버(로컬 Ryzen 7 2700x, 32GB RAM), DB/Redis/서비스 모두 컨테이너  
-**테스트방식**: Artillery로 Warmup~Peak~Overload(최대 3,000 RPS/20초) 부하, QPS/응답속도 측정  
-**한계/참고**: Redis TTL 30초, DB/Redis 단일 인스턴스 (클러스터 아님)  
-**핵심 요약**:  
-**“대량 트래픽(3,000 QPS)에서 캐시 미적용 시 DB 병목(p95=6.4초) — 캐시 적용 후 1초 이하로 감소. 실무 환경 효과/한계 직접 검증”**
 
-
-#### 3.2. Redis 캐시 info 결과
+#### 4.2. Redis 캐시 info 결과
 
 ```plaintext
 # Stats (INFO)
@@ -83,12 +76,41 @@ total_commands_processed: 122,563
 total_error_replies:        3,107
 ```
 
-#### 3.3. 인사이트/정리
-캐시 도입 전: 대량 트래픽 → DB 병목, 느린 응답 발생
 
-캐시 도입 후: 최초 1회만 DB, 이후 캐시에서 빠르게 조회 (응답 1/3 이하로 감소)
+#### 4.3. 실험 환경 및 방법
+> 모든 실험은 **Docker compose** 기반 단일 서버(Ryzen 7 2700x, 32GB RAM) 환경
+> **DB/Redis/서비스**  컨테이너 분리, Artillery로 최대 3,000 RPS/20초 부하
+> **Redis 캐시 TTL** 30초, 단일 인스턴스 기준
 
-서비스 확장 시 hot data 캐시 hit율은 더 높아질 수 있음
 
-적중률 개선(LRU/TTL 등 전략, 캐시 유효기간 조정 등) 시 더욱 효과적
+#### 4.4. 실험 결과 요약/인사이트
+
+> “Redis 캐시 도입 후 QPS 3,000 환경에서 DB 병목 구간이 p95=6.4초 → 1초 이하로 크게 개선됨.
+> 실제 장애내성, 응답 속도, 확장성 개선 효과를 수치로 입증.”
+
+
+## 5. 실행/테스트
+
+### 🟦 Swagger API 문서
+
+- Account Service: http://localhost:3000/api-docs
+- Challenge Service: http://localhost:3001/api-docs
+- 각 서비스에서 엔드포인트/요청·응답 예시/테스트 가능
+<p float="left">
+  <img src="https://github.com/user-attachments/assets/dfd0acf2-58c8-4f13-933f-b665087a1b7b" width="49%"/>
+  <img src="https://github.com/user-attachments/assets/029704e3-a4ef-4ad1-a102-d1a4b4ab2e9b" width="49%"/>
+</p>
+
+
+
+## 6. 회고/느낀점
+
+> 이번 프로젝트를 통해 이전 회사에서 단순히 **사용**만 해봤던 기술들을
+> 실제 서비스 아키텍처/운영/성능/자동화까지 직접 설계하고 실험하며 실무 환경에 가깝게 경험했습니다.
+> 
+> 작은 프로젝트임에도 불구하고 수많은 에러와 시행착오를 겪으며 단순히 기능을 쓸 줄 안다에서
+> **문제를 정의하고 근본적인 원인을 고민하며**, 직접 해결할 수 있는 역량을 기를 수 있었습니다
+> 
+> 이제는 **문제를 발견하고 구조적으로 해결하는 개발자**라고 말할 수 있습니다
+
 
