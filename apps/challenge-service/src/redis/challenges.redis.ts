@@ -1,14 +1,9 @@
-import Redis from 'ioredis';
 import { Challenge } from '../challenges/entities/challenge.entity';
 import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateChallengeDto } from '../challenges/dto/create-challenge.dto';
-
-const redis = new Redis({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379', 10),
-});
+import { redis } from './redis.client';
 
 const CHALLENGE_CACHE_PREFIX = 'cache:challenge'; // ✅ 캐시용
 const CHALLENGE_LOG_PREFIX = 'log:challenge'; // ✅ 로그용

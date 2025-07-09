@@ -7,6 +7,7 @@ README.md
 #Redis snapshots
 redis_data/
 *.rdb
+dump.rdb
 
 # Logs
 logs
