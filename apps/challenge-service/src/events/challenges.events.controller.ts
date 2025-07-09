@@ -16,17 +16,24 @@ export class ChallengeEventsController {
   async handleValidateUser(@Payload() payload: { userId: string }) {
     console.log('[📥] user_validated 이벤트 수신:', payload.userId);
 
-    const dto = await this.challengeLogService.getCachedPendingChallenge(payload.userId);
-    if (!dto) {
+    const cached = await this.challengeLogService.getCachedPendingChallenge(payload.userId);
+    if (!cached) {
       console.warn(`[!] user_validated but no pending DTO for user ${payload.userId}`);
       return;
     }
 
-    const exists = await this.challengeService.findByTitle(dto.title);
+    const exists = await this.challengeService.findByTitle(cached.title);
     if (exists) {
-      console.log(`[⚠] 챌린지 중복됨: ${dto.title}`);
+      console.log(`[⚠] 챌린지 중복됨: ${cached.title}`);
       return;
     }
+
+    const dto = {
+      ...cached,
+      startDate: new Date(cached.startDate),
+      endDate: new Date(cached.endDate),
+      userId: Number(payload.userId),
+    };
 
     await this.challengeService.createForValidatedUser(dto);
   }
