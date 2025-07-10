@@ -4,7 +4,6 @@ import { AppModule } from '../src/account-service.module';
 import * as request from 'supertest';
 import { Response } from 'supertest';
 import { Server } from 'http';
-import { access } from 'fs';
 
 interface LoginResponse {
   accessToken: string;
