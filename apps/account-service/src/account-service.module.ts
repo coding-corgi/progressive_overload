@@ -12,7 +12,6 @@ import { AccountEventsController } from './events/account.events.controller';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env.test',
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

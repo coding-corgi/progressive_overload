@@ -6,12 +6,14 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build account-service",
+    "build": "nest build account-service && nest build challenge-service",
     "start": "nest start",
     "start:어카": "nest start account-service --watch",
     "start:챌": "nest start challenge-service --watch",
     "start:debug": "nest start account-service --debug --watch",
     "start:prod": "node dist/apps/account-service/main",
+    "start:prod:account": "node dist/apps/account-service/main",
+    "start:prod:challenge": "node dist/apps/challenge-service/main",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
@@ -19,9 +21,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "cross-env FORCE_EXIT_DELAY=1000 jest --config ./apps/challenge-service/test/jest-e2e.json",
-    "test:e2e:account": "jest --config ./apps/account-service/test/jest-e2e.json",
-    "test:e2e:challenge": "cross-env FORCE_EXIT_DELAY=1000 jest --detectOpenHandles --config ./apps/challenge-service/test/jest-e2e.json"
-
+    "test:e2e:account": "cross-env FORCE_EXIT_DELAY=1000 jest --config ./apps/account-service/test/jest-e2e.json",
+    "test:e2e:challenge": "cross-env FORCE_EXIT_DELAY=1000 jest --detectOpenHandles --config ./apps/challenge-service/test/jest-e2e.json",
+    "start:account": "nest start apps/account-service"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.0",

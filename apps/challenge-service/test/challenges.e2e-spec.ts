@@ -26,6 +26,7 @@ interface CreateChallengeDto {
 describe('ChallengeController (e2e)', () => {
   let app: INestApplication;
   let server: Server;
+  let createdUserId: number;
 
   beforeAll(async () => {
     const moduleFixture = await Test.createTestingModule({
@@ -35,57 +36,58 @@ describe('ChallengeController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
-
     server = app.getHttpServer() as Server;
+
+    const userRes = await request('http://account-service:3000')
+      .post('/users')
+      .send({
+        email: `test+${Date.now()}@example.com`,
+        password: '1234abcdefgh',
+        name: 'TestUser',
+      });
+
+    const body = userRes.body as { id: number };
+    createdUserId = body.id;
   });
 
-  it('/challenges (POST) - validate_user를 내보내고 유효하면 챌린지 생성', async () => {
-    const challengeDto: CreateChallengeDto = {
-      title: 'Test Challenge',
+  it('POST /challenges - 유효한 유저로 챌린지 생성 성공', async () => {
+    const dto: CreateChallengeDto = {
+      title: `Test Challenge ${Date.now()}`,
       description: 'This is a test challenge',
       startDate: new Date().toISOString(),
       endDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
-      userId: 4, // 예시 사용자 ID
+      userId: createdUserId,
     };
 
-    // POST 요청으로 유저 검증 emit
-    await request(server).post('/challenges').send(challengeDto).expect(201);
+    const res = await request(server).post('/challenges').send(dto);
+    expect(res.status).toBe(201);
 
-    // 챌린지 생성까지 MQ 비동기 처리 대기
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // 챌린지 목록에서 생성된 챌린지 확인
-    const response = await request(server).get('/challenges').expect(200);
-    const challengs = response.body as Challenge[];
-
-    // const found = response.body.find((challenge) => challenge.title === challengeDto.title);
-    const found = challengs.find((challenge) => challenge.title === challengeDto.title);
+    const challengeList = await request(server).get('/challenges').expect(200);
+    const found = (challengeList.body as Challenge[]).find((c) => c.title === dto.title);
 
     expect(found).toBeDefined();
-    expect(found?.userId).toBe(challengeDto.userId);
+    expect(found?.userId).toBe(dto.userId);
   });
 
-  it('/challenges (POST) - 유효하지 않은 userid로 챌린지 생성 실패', async () => {
-    const InvalidUserId = 9999;
-    const challengeDto: CreateChallengeDto = {
-      title: 'Invalid User Challenge',
+  it('POST /challenges - 유효하지 않은 유저는 챌린지 생성 실패', async () => {
+    const dto: CreateChallengeDto = {
+      title: `Test Challenge ${Date.now()}`,
       description: 'This challenge should not be created',
       startDate: new Date().toISOString(),
       endDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
-      userId: InvalidUserId,
+      userId: 9999,
     };
 
-    // POST 요청 => validate_user emit => user_not_found 이벤트 수신
-    await request(server).post('/challenges').send(challengeDto).expect(201);
+    const res = await request(server).post('/challenges').send(dto);
+    expect(res.status).toBe(201); // 요청은 받되 실제로 생성은 안 됨 (낙관적 응답
 
-    // 챌린지 생성까지 MQ 비동기 처리 대기
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // 챌린지 목록에서 해당 챌린지 없는지 확인
-    const response = await request(server).get('/challenges').expect(200);
-    const challenges = response.body as Challenge[];
+    const challengeList = await request(server).get('/challenges').expect(200);
+    const found = (challengeList.body as Challenge[]).find((c) => c.title === dto.title);
 
-    const found = challenges.find((challenge) => challenge.title === challengeDto.title);
     expect(found).toBeUndefined();
   });
 

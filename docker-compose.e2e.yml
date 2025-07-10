@@ -1,0 +1,125 @@
+version: '3.8'
+services:
+  test-mysql:
+    image: mysql:8.0
+    container_name: test-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: marshall
+      MYSQL_DATABASE: progressive_overload
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  test-redis:
+    image: redis:latest
+    container_name: test-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  test-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: test-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: myuser
+      RABBITMQ_DEFAULT_PASS: mypassword
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  account-service:
+    container_name: account-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      test-mysql:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+      test-rabbitmq:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql://myuser:mypassword@test-mysql:3306/progressive_overload
+      ACCOUNT_SERVICE_MQ_URL: amqp://myuser:mypassword@test-rabbitmq:5672
+      CHALLENGE_SERVICE_MQ_URL: amqp://myuser:mypassword@test-rabbitmq:5672
+      REDIS_HOST: test-redis
+      REDIS_PORT: 6379
+      JWT_ACCESS_TOKEN_SECRET_KEY: supersecretkey
+      JWT_ACCESS_TOKEN_EXPIRATION: 1h
+      JWT_REFRESH_TOKEN_SECRET_KEY: super1234secretkey
+      JWT_REFRESH_TOKEN_EXPIRATION: 7d
+    networks:
+      - default
+    ports:
+      - "3000:3000"
+    command: pnpm start:prod:account
+
+  challenge-service:
+    container_name: challenge-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      test-mysql:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+      test-rabbitmq:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql://myuser:mypassword@test-mysql:3306/progressive_overload
+      ACCOUNT_SERVICE_MQ_URL: amqp://myuser:mypassword@test-rabbitmq:5672
+      CHALLENGE_SERVICE_MQ_URL: amqp://myuser:mypassword@test-rabbitmq:5672
+      REDIS_HOST: test-redis
+      REDIS_PORT: 6379
+      JWT_ACCESS_TOKEN_SECRET_KEY: supersecretkey
+      JWT_ACCESS_TOKEN_EXPIRATION: 1h
+      JWT_REFRESH_TOKEN_SECRET_KEY: super1234secretkey
+      JWT_REFRESH_TOKEN_EXPIRATION: 7d
+    ports:
+      - "3001:3001"
+    networks:
+      - default      
+    command: pnpm start:prod:challenge
+
+  e2e-test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: e2e-test-runner
+    depends_on:
+      test-mysql:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+      test-rabbitmq:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql://myuser:mypassword@test-mysql:3306/progressive_overload
+      ACCOUNT_SERVICE_MQ_URL: amqp://myuser:mypassword@test-rabbitmq:5672
+      CHALLENGE_SERVICE_MQ_URL: amqp://myuser:mypassword@test-rabbitmq:5672
+      ACCOUNT_SERVICE_URL: http://account-service:3000
+      CHALLENGE_SERVICE_URL: http://challenge-service:3001
+      REDIS_HOST: test-redis
+      REDIS_PORT: 6379
+      JWT_ACCESS_TOKEN_SECRET_KEY: supersecretkey
+      JWT_ACCESS_TOKEN_EXPIRATION: 1h
+      JWT_REFRESH_TOKEN_SECRET_KEY: super1234secretkey
+      JWT_REFRESH_TOKEN_EXPIRATION: 7d
+    networks:
+      - default
+    command: pnpm test:e2e:challenge

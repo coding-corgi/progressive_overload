@@ -4,10 +4,17 @@
 /build
 README.md
 
+.env*
 #Redis snapshots
-redis_data/
 *.rdb
-dump.rdb
+redis_data/
+
+e2e테스트용명령어
+
+# 개인 참고용 파일 무시
+*.md
+*.txt
+*테스트*
 
 # Logs
 logs

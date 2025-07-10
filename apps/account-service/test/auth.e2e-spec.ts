@@ -12,8 +12,12 @@ interface LoginResponse {
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
+  let server: Server;
   let refreshToken: string;
   let accessToken: string;
+
+  const testEmail = `refresh+${Date.now()}@example.com`;
+  const testPassword = 'test1234';
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -24,27 +28,29 @@ describe('AuthController (e2e)', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
 
-    const server = app.getHttpServer() as Server;
+    server = app.getHttpServer() as Server;
+
     await request(server).post('/users').send({
-      email: 'refresh@test.com',
-      password: 'test1234',
+      email: testEmail,
+      password: testPassword,
       name: 'Test User',
     });
 
-    const loginResponse: Response = await request(server)
-      .post('/auth/login')
-      .send({
-        email: 'refresh@test.com',
-        password: 'test1234',
-      })
-      .expect(201);
+    const loginResponse: Response = await request(server).post('/auth/login').send({
+      email: testEmail,
+      password: testPassword,
+    });
+    const body = loginResponse.body as LoginResponse;
 
-    accessToken = (loginResponse.body as LoginResponse).accessToken;
-    refreshToken = (loginResponse.body as LoginResponse).refreshToken;
+    accessToken = body.accessToken;
+    refreshToken = body.refreshToken;
   });
 
-  it('/auth/refresh (POST)- 리프래쉬 토큰과 함꼐 새로운 토큰 반환 ', async () => {
-    const server = app.getHttpServer() as Server;
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('POST /auth/refresh - 유효한 리프래쉬 토큰으로 새 토큰 발급 ', async () => {
     const response = await request(server)
       .post('/auth/refresh')
       .set('Authorization', `Bearer ${refreshToken}`)
@@ -56,8 +62,7 @@ describe('AuthController (e2e)', () => {
     expect(body.refreshToken).toBeDefined();
   });
 
-  it('/auth/logout (POST) - 로그아웃 성공', async () => {
-    const server = app.getHttpServer() as Server;
+  it('POST /auth/logout - 로그아웃 성공', async () => {
     const response = await request(server)
       .post('/auth/logout')
       .set('Authorization', `Bearer ${accessToken}`)
@@ -66,17 +71,9 @@ describe('AuthController (e2e)', () => {
     expect(response.body).toEqual({ message: '로그아웃 성공' });
   });
 
-  it('/auth/refresh (POST) - 로그아웃 후 리프래쉬 토큰 무효화', async () => {
-    const server = app.getHttpServer() as Server;
-
-    // 로그아웃 요청
+  it('POST /auth/refresh - 로그아웃 후 리프래쉬 토큰으로 재발급 실패 401', async () => {
     await request(server).post('/auth/logout').set('Authorization', `Bearer ${accessToken}`).expect(201);
 
-    // 로그아웃 후 리프래쉬 토큰으로 새로운 토큰 요청 시도
     await request(server).post('/auth/refresh').set('Authorization', `Bearer ${refreshToken}`).expect(401);
-  });
-
-  afterAll(async () => {
-    await app.close();
   });
 });

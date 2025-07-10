@@ -12,6 +12,9 @@ interface LoginResponse {
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 
+  const testEmail = `test+${Date.now()}@example.com`;
+  const testPassword = 'test1234';
+
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -22,8 +25,8 @@ describe('AppController (e2e)', () => {
     await app.init();
 
     await request(app.getHttpServer()).post('/users').send({
-      email: 'test@test.com',
-      password: 'test1234',
+      email: testEmail,
+      password: testPassword,
       name: 'Test User',
     });
   });
@@ -32,13 +35,10 @@ describe('AppController (e2e)', () => {
     await app.close();
   });
 
-  it('/auth/login (POST) -로그인 성공', async () => {
+  it('POST /auth/login - 로그인 성공', async () => {
     const response = await request(app.getHttpServer())
       .post('/auth/login')
-      .send({
-        email: 'test@test.com',
-        password: 'test1234',
-      })
+      .send({ email: test, password: testPassword })
       .expect(201);
 
     const body = response.body as LoginResponse;

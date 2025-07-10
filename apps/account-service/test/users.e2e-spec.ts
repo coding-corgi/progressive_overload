@@ -12,7 +12,10 @@ interface LoginResponse {
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
+  let server: Server;
   let accessToken: string;
+  const testEmail = `test+${Date.now()}@example.com`;
+  const testPassword = 'password123';
 
   beforeAll(async () => {
     const moduleFixture = await Test.createTestingModule({
@@ -23,35 +26,35 @@ describe('UsersController (e2e)', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
 
-    const server = app.getHttpServer() as Server;
+    server = app.getHttpServer() as Server;
+
     await request(server).post('/users').send({
-      email: 'me@test.com',
-      name: 'my',
-      password: 'password123',
+      email: testEmail,
+      name: 'Test User',
+      password: testPassword,
     });
 
     const loginResponse: Response = await request(server).post('/auth/login').send({
-      email: 'me@test.com',
-      password: 'password123',
+      email: testEmail,
+      password: testPassword,
     });
 
-    accessToken = (loginResponse.body as LoginResponse).accessToken;
-  });
-
-  it('/users/me (GET) - 내 정보 조회 성공', async () => {
-    const server = app.getHttpServer() as Server;
-    const response = await request(server).get('/users/me').set('Authorization', `Bearer ${accessToken}`).expect(200);
-
-    expect(response.body).toHaveProperty('email', 'me@test.com');
-    expect(response.body).toHaveProperty('id');
-  });
-
-  it('/users/me (GET) - 인증없이 요청시 실패', async () => {
-    const server = app.getHttpServer() as Server;
-    await request(server).get('/users/me').expect(401);
+    const body = loginResponse.body as LoginResponse;
+    accessToken = body.accessToken;
   });
 
   afterAll(async () => {
     await app.close();
+  });
+
+  it('GET /users/me - 내 정보 조회 성공', async () => {
+    const response = await request(server).get('/users/me').set('Authorization', `Bearer ${accessToken}`).expect(200);
+
+    expect(response.body).toHaveProperty('email', testEmail);
+    expect(response.body).toHaveProperty('id');
+  });
+
+  it('GET /users/me - 인증 없이 접근 시 401 반환', async () => {
+    await request(server).get('/users/me').expect(401);
   });
 });
