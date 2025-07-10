@@ -1,6 +1,15 @@
 
 # Progressive Overload 프로젝트
 
+## 📚 목차
+
+1. [프로젝트 개요](#1-프로젝트-개요)
+2. [아키텍처 다이어그램](#2-아키텍처-다이어그램)
+3. [기술 스택 & 인프라](#3-기술-스택--인프라)
+4. [실험/성능 지표 (캐시 도입 전후)](#4-실험성능-지표-캐시-도입-전후)
+5. [실행/테스트](#5-실행테스트)
+6. [회고/느낀점](#6-회고느낀점)
+
 ## 1. 프로젝트 개요
 
 > **실무에서 경험한 핵심 백엔드 기술을  
@@ -9,7 +18,8 @@
 
 - **핵심 도메인**
   - `Account Service` : 회원가입/인증/유저 관리 (MySQL)
-  - `Challenge Service` : 챌린지 생성/운동 기록/성장지표 관리 (MySQL + Redis)
+  - `Challenge Service` : 챌린지 생성/조회 중심, Redis 기반 캐싱 실험 (MySQL + Redis)
+
 - **MSA/DDD 아키텍처 기반, 컨테이너 환경(Docker)에서 실험**
 - **모든 핵심 흐름/실험/지표 직접 설계·구현·측정**
 
@@ -89,6 +99,68 @@ total_error_replies:        3,107
 > 실제 장애내성, 응답 속도, 확장성 개선 효과를 수치로 입증.”
 
 
+#### 4.5. 테스트 기반 캐시 검증 + 종료 안정화
+> 실제 캐시 HIT/MISS 동작과 Redis Key 생성 여부를 e2e 테스트로 검증,
+> 테스트 종료 시 리소스 누수 문제를 해결하여 안정성을 확보.
+
+##### ✅ 캐시 적중 테스트 예시 (Jest e2e)
+
+```ts
+const userId = 4;
+const cacheKey = `cache:challenge:${userId}`;
+
+// 테스트 전 캐시 삭제
+await redis.del(cacheKey);
+
+// 챌린지 생성 (1st MISS 유도)
+await request(server)
+  .post('/challenges')
+  .send({ ... })
+  .expect(201);
+
+// 첫 조회: 캐시 MISS → DB
+const res1 = await request(server).get(`/challenges/logs/${userId}`).expect(200);
+
+// 두 번째 조회: 캐시 HIT
+const res2 = await request(server).get(`/challenges/logs/${userId}`).expect(200);
+expect(res2.body).toEqual(res1.body);
+
+// Redis에 캐시 실제 생성 확인
+const cached = await redis.get(cacheKey);
+expect(cached).toBeDefined();
+```
+
+##### ✅ Redis 종료 누락 문제 해결 (`ioredis` open handle)
+
+- 초기에 전역 Redis 클라이언트를 직접 생성 → Jest 종료 시 리소스 미반환
+- `onApplicationShutdown()` 훅으로 redis.quit() 명시
+- `--detectOpenHandles` 옵션으로 리소스 누수 없는 종료 확인
+
+```ts
+@Module({...})
+export class RedisModule implements OnApplicationShutdown {
+  async onApplicationShutdown() {
+    if (redis) {
+      await redis.quit(); // 테스트 종료 시 안전하게 종료
+    }
+  }
+}
+```
+
+##### 🔍 실행 시 에러 제거 확인
+
+```bash
+# 이전
+A worker process has failed to exit gracefully...
+
+# 리팩토링 후
+Test Suites: 3 passed, 3 total
+Tests:       5 passed, 5 total
+(no open handles)
+```
+
+> ✅ Redis 캐시 과정과 테스트 종료 안정성을 함께 검증하며,
+> 실무에서 필요한 기능 안정성과 테스트 신뢰성 확보까지 구조적으로 접근했습니다.
 ## 5. 실행/테스트
 
 ### 🟦 Swagger API 문서
@@ -101,6 +173,17 @@ total_error_replies:        3,107
   <img src="https://github.com/user-attachments/assets/029704e3-a4ef-4ad1-a102-d1a4b4ab2e9b" width="49%"/>
 </p>
 
+
+### 🔧 테스트 실행 방법
+
+#### ▶️ Account Service E2E 테스트
+```bash
+pnpm test:e2e:account
+```
+#### ▶️ Challenge Service E2E 테스트
+```
+pnpm test:e2e:challenge
+```
 
 
 ## 6. 회고/느낀점
