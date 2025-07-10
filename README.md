@@ -6,7 +6,7 @@
 1. [프로젝트 개요](#1-프로젝트-개요)
 2. [아키텍처 다이어그램](#2-아키텍처-다이어그램)
 3. [기술 스택 & 인프라](#3-기술-스택--인프라)
-4. [실험/성능 지표 (캐시 도입 전후)](#4-실험성능-지표-캐시-도입-전후)
+4. [Redis 캐시 도입 전후 성능 실험 및 결과 분석](#4-실험성능-지표-캐시-도입-전후)
 5. [실행/테스트](#5-실행테스트)
 6. [회고/느낀점](#6-회고느낀점)
 
@@ -53,7 +53,7 @@
 ![스킬 drawio](https://github.com/user-attachments/assets/b47b3e0a-f92c-424d-a68e-939e7a484805)
 
 
-## 4. 실험/성능 지표 (캐시 도입 전후)
+## 4. Redis 캐시 도입 전후 성능 실험 및 결과 분석
 
 #### 4.1. Redis 캐시 적용 전/후 성능 변화
 
@@ -109,58 +109,57 @@ total_error_replies:        3,107
 const userId = 4;
 const cacheKey = `cache:challenge:${userId}`;
 
-// 테스트 전 캐시 삭제
+// 1. 기존 캐시 삭제 => MISS 유도
 await redis.del(cacheKey);
 
-// 챌린지 생성 (1st MISS 유도)
+// 2. 챌린지 생성 (캐시 MISS 발생 유도)
 await request(server)
   .post('/challenges')
   .send({ ... })
   .expect(201);
 
-// 첫 조회: 캐시 MISS → DB
+// 3. 첫 번째 조회 (MISS => DB 조회 발생)
 const res1 = await request(server).get(`/challenges/logs/${userId}`).expect(200);
 
-// 두 번째 조회: 캐시 HIT
+// 4. 두 번째 조회 (HIT => Redis 캐시 조회)
 const res2 = await request(server).get(`/challenges/logs/${userId}`).expect(200);
 expect(res2.body).toEqual(res1.body);
 
-// Redis에 캐시 실제 생성 확인
+// 5. Redis에 실제 캐시가 생성되었는지 확인
 const cached = await redis.get(cacheKey);
 expect(cached).toBeDefined();
 ```
 
 ##### ✅ Redis 종료 누락 문제 해결 (`ioredis` open handle)
 
-- 초기에 전역 Redis 클라이언트를 직접 생성 → Jest 종료 시 리소스 미반환
-- `onApplicationShutdown()` 훅으로 redis.quit() 명시
-- `--detectOpenHandles` 옵션으로 리소스 누수 없는 종료 확인
+- 전역 Redis 클라이언트 직접 생성 시 Jest 테스트 종료 시점에 리소스가 남는 이슈 발생
+- onApplicationShutdown() 훅에서 redis.quit() 명시하여 안전하게 종료
+- --detectOpenHandles 옵션으로 리소스 누수 없는 종료 검증 가능
 
 ```ts
 @Module({...})
 export class RedisModule implements OnApplicationShutdown {
   async onApplicationShutdown() {
     if (redis) {
-      await redis.quit(); // 테스트 종료 시 안전하게 종료
+      await redis.quit(); // 테스트 종료 시 안전하게 shutdown
     }
   }
 }
 ```
 
-##### 🔍 실행 시 에러 제거 확인
+##### 🧪 실행 결과 변화 (before → after)
 
-```bash
-# 이전
-A worker process has failed to exit gracefully...
 
-# 리팩토링 후
-Test Suites: 3 passed, 3 total
-Tests:       5 passed, 5 total
-(no open handles)
-```
 
-> ✅ Redis 캐시 과정과 테스트 종료 안정성을 함께 검증하며,
-> 실무에서 필요한 기능 안정성과 테스트 신뢰성 확보까지 구조적으로 접근했습니다.
+
+|   상황 |  메세지 |
+|--------|-------|
+| ⛔ 변경 전 | A worker process has failed to exit gracefully... |
+| ✅ 변경 후 | Test Suites: 3 passed, 3 total (no open handles) |
+
+
+> ✅ Redis 캐시 생성 흐름과 테스트 종료 안정성까지 엔드투엔드(e2e) 기반으로 함께 검증하며,
+> 단순 기능을 넘어서 시스템 레벨 안정성까지 테스트로 증명했습니다.
 ## 5. 실행/테스트
 
 ### 🟦 Swagger API 문서
