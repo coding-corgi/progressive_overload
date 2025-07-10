@@ -6,6 +6,7 @@ import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ChallengeModule } from './challenges/challenges.module';
 import { ChallengeEventsController } from './events/challenges.events.controller';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ChallengeEventsController } from './events/challenges.events.controller
       timeout: 3000,
     }),
     ChallengeModule,
+    RedisModule,
   ],
   controllers: [ChallengeServiceController, ChallengeEventsController],
   providers: [ChallengeServiceService],

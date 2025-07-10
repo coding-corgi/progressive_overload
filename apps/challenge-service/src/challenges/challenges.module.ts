@@ -7,11 +7,13 @@ import { HttpModule } from '@nestjs/axios';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ChallengeLogsService } from '../redis/challenges.redis';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Challenge]),
     HttpModule,
+    RedisModule,
     ClientsModule.registerAsync([
       {
         name: 'ACCOUNT_SERVICE',
