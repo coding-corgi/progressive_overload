@@ -3,7 +3,7 @@ import { Server } from 'http';
 import { Test } from '@nestjs/testing';
 import { ChallengeServiceModule } from '../src/challenge-service.module';
 import * as request from 'supertest';
-import { redis } from '../src/redis/redis.client';
+import Redis from 'ioredis';
 
 interface Challenge {
   id: number;
@@ -27,6 +27,7 @@ interface CreateChallengeDto {
 describe('ChallengeRedisController (e2e)', () => {
   let app: INestApplication;
   let server: Server;
+  let redis: Redis;
 
   beforeAll(async () => {
     const moduleFixture = await Test.createTestingModule({
@@ -37,6 +38,7 @@ describe('ChallengeRedisController (e2e)', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
 
+    redis = app.get<Redis>('REDIS_CLIENT');
     server = app.getHttpServer() as Server;
   });
 
@@ -73,7 +75,39 @@ describe('ChallengeRedisController (e2e)', () => {
     expect(cachedChallenge).toBeDefined();
   });
 
+  it('GET /challenges/:id - 캐시 적중률 확인', async () => {
+    const userId = 4; // 예시 사용자 ID
+    const cacheKey = `cache:challenge:${userId}`;
+
+    //테스트용 캐시 삭제
+    await redis.del(cacheKey);
+
+    await request(server)
+      .post('/challenges')
+      .send({
+        userId,
+        title: `Test Challenge ${Date.now()}`,
+        description: 'This is a test challenge',
+        startDate: new Date().toISOString(),
+        endDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
+      })
+      .expect(201);
+
+    const response1 = await request(server).get(`/challenges/logs/${userId}?count=1`).expect(200);
+    console.log('First response:', response1.body);
+
+    const response2 = await request(server).get(`/challenges/logs/${userId}?count=1`).expect(200);
+    console.log('Second response:', response2.body);
+
+    expect(response2.body).toEqual(response1.body);
+
+    const redisValue = await redis.get(cacheKey);
+    expect(redisValue).toBeDefined();
+  });
+
   afterAll(async () => {
+    const redis = app.get<Redis>('REDIS_CLIENT');
+    await redis.quit();
     await app.close();
   });
 });
