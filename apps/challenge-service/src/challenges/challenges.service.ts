@@ -34,7 +34,6 @@ export class ChallengeService {
   }
 
   async findAll() {
-    console.log('[📥] findAll called');
     return await this.challengeRepository.find();
   }
 
