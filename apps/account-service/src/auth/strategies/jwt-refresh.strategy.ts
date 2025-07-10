@@ -37,7 +37,8 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
       throw new UnauthorizedException(' 리프레쉬 토큰이 유효하지 않습니다.');
     }
 
-    const { password: _, ...userWithoutPassword } = user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
 }
