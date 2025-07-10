@@ -25,7 +25,7 @@
 
 
 ## 2. 아키텍처 다이어그램
-![제목 없는 다이어그램 drawio (1)](https://github.com/user-attachments/assets/f7e08567-977a-49a3-bb65-0b6aa1230dbb)
+![제목 없는 다이어그램의 복사본 drawio](https://github.com/user-attachments/assets/6c9de1a8-77ba-4844-9662-8b55882e2ac6)
 
 - **Account**: 유저, 인증, REST API, MySQL
 - **Challenge**: 챌린지 생성/목록 조회 중심, MySQL+Redis, MQ 이벤트 기반 연동
