@@ -88,7 +88,6 @@ export class UsersService {
   }
 
   async removeRefreshToken(userId: number): Promise<void> {
-    console.log(`Removing refresh token for user ID: ${userId}`);
     await this.userRepository.update({ id: userId }, { hashedRefreshToken: null });
   }
 }

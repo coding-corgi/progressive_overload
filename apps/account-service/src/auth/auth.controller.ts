@@ -11,27 +11,25 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @ApiOperation({ summary: '로그인 API' })
+  @ApiOperation({ summary: '로그인' })
   @Post('login')
-  async login(@Body() loginDto: LoginDto): Promise<any> {
+  async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 
-  @ApiOperation({ summary: '회원가입 API' })
+  @ApiOperation({ summary: '액세스 토큰 재발급 (리프레시 토큰 사용)' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt-refresh'))
   @Post('refresh')
   refreshTokens(@Req() req: Request & { user: User }) {
-    const user = req.user;
-    return this.authService.refreshTokens(user);
+    return this.authService.refreshTokens(req.user);
   }
 
-  @ApiOperation({ summary: '로그아웃 API' })
+  @ApiOperation({ summary: '로그아웃 (리프레시 토큰 제거)' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Post('logout')
-  @UseGuards(AuthGuard('jwt')) // JWT 인증 가드 사용
   async logout(@Req() req: Request & { user: User }) {
-    const user = req.user;
-    return await this.authService.logout(user);
+    return await this.authService.logout(req.user);
   }
 }

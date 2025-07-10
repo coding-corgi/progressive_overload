@@ -10,24 +10,20 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 
 @Module({
   imports: [
-    UsersModule, // UsersModule을 임포트하여 사용자 관련 기능 사용
-    PassportModule.register({ defaultStrategy: 'jwt' }), // Passport 모듈을 등록하고 기본 전략을 JWT로 설정
+    UsersModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_ACCESS_TOKEN_SECRET_KEY'), // JWT 비밀 키를 환경 변수에서 가져옴
+        secret: configService.get<string>('JWT_ACCESS_TOKEN_SECRET_KEY'),
         signOptions: {
           expiresIn: configService.get<string>('JWT_ACCESS_TOKEN_EXPIRATION') || '1h',
-        }, // 토큰 만료 시간 설정
+        },
       }),
     }),
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    JwtStrategy, // JWT 모듈을 프로바이더로 등록
-    JwtRefreshStrategy, // 리프레시 토큰 전략을 프로바이더로 등록
-  ],
+  providers: [AuthService, JwtStrategy, JwtRefreshStrategy],
 })
 export class AuthModule {}
