@@ -12,6 +12,7 @@ import { RedisModule } from './redis/redis.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env.test',
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
