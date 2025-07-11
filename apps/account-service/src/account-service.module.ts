@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AccountServiceController } from './account-service.controller';
-import { AppService } from './account-service.service';
 import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -45,7 +43,7 @@ import { AccountEventsController } from './events/account.events.controller';
       },
     ]),
   ],
-  controllers: [AccountServiceController, AccountEventsController],
-  providers: [AppService],
+  controllers: [AccountEventsController],
+  providers: [],
 })
 export class AppModule {}
