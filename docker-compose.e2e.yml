@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  test-mysql:
+  mysql:
     image: mysql:8.0
     environment:
       MYSQL_ROOT_PASSWORD: marshall
@@ -13,7 +13,7 @@ services:
       timeout: 3s
       retries: 10
 
-  test-redis:
+  redis:
     image: redis:latest
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -21,7 +21,7 @@ services:
       timeout: 3s
       retries: 10
 
-  test-rabbitmq:
+  rabbitmq:
     image: rabbitmq:3-management
     environment:
       RABBITMQ_DEFAULT_USER: myuser
@@ -37,11 +37,11 @@ services:
       context: .
       dockerfile: Dockerfile
     depends_on:
-      test-mysql:
+      mysql:
         condition: service_healthy
-      test-redis:
+      redis:
         condition: service_healthy
-      test-rabbitmq:
+      rabbitmq:
         condition: service_healthy
     environment:
       DATABASE_URL: mysql://myuser:mypassword@test-mysql:3306/progressive_overload
@@ -62,11 +62,11 @@ services:
       context: .
       dockerfile: Dockerfile
     depends_on:
-      test-mysql:
+      mysql:
         condition: service_healthy
-      test-redis:
+      redis:
         condition: service_healthy
-      test-rabbitmq:
+      rabbitmq:
         condition: service_healthy
     environment:
       DATABASE_URL: mysql://myuser:mypassword@test-mysql:3306/progressive_overload
@@ -87,11 +87,11 @@ services:
       context: .
       dockerfile: Dockerfile
     depends_on:
-      test-mysql:
+      mysql:
         condition: service_healthy
-      test-redis:
+      redis:
         condition: service_healthy
-      test-rabbitmq:
+      rabbitmq:
         condition: service_healthy
     environment:
       DATABASE_URL: mysql://myuser:mypassword@test-mysql:3306/progressive_overload
