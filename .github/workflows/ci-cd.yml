@@ -10,54 +10,32 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: testpass
-          MYSQL_DATABASE: testdb
-        ports:
-          - 3306:3306
-
-      redis:
-        image: redis:latest
-        ports:
-          - 6379:6379
-
-      rabbitmq:
-        image: rabbitmq:3-management
-        ports:
-          - 5672:5672
-          - 15672:15672
-
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      
+
       - name: Install dependencies
         run: npm install
-      
-      - name: Run Lint
+
+      - name: Lint
         run: npm run lint
-      
-      - name: ✅ Copy env
+
+      - name: Build
+        run: npm run build
+
+      - name: Copy test env
         run: cp .env.test .env
 
-
-      - name: Run e2e containers and tests
-        run: docker compose -f docker-compose.e2e.yml up --build --abort-on-container-exit
-      
-      - name: Run Tests
+      - name: Unit Test & Coverage
         run: npm run test:ci
 
-      - name: Build Project
-        run: npm run build
-        
-      - name: Build Docker image
+      - name: Run E2E Containers & Tests
+        run: docker compose -f docker-compose.e2e.yml up --build --abort-on-container-exit
+
+      - name: Build Docker Image
         run: docker build -t progressive-overload .
-    
