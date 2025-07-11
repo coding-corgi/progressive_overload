@@ -22,6 +22,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:ci": "npm run test:cov",
+    "test:all": "npm run test:cov && npm run test:e2e",
+
 
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     
