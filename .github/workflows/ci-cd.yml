@@ -7,8 +7,33 @@ on:
     branches: [main, master]
 
 jobs:
-  build-and-test:
+  ci:
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: marshall
+          MYSQL_DATABASE: progressive_overload
+          MYSQL_USER: myuser
+          MYSQL_PASSWORD: mypassword
+        ports:
+          - 3306:3306
+
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+
+      rabbitmq:
+        image: rabbitmq:3-management
+        env:
+          RABBITMQ_DEFAULT_USER: myuser
+          RABBITMQ_DEFAULT_PASS: mypassword
+        ports:
+          - 5672:5672
+          - 15672:15672
 
     steps:
       - name: Checkout source code
@@ -22,20 +47,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Build
-        run: npm run build
-
       - name: Copy test env
         run: cp .env.test .env
+
+      - name: Lint
+        run: npm run lint
 
       - name: Unit Test & Coverage
         run: npm run test:ci
 
-      - name: Run E2E Containers & Tests
-        run: docker compose -f docker-compose.e2e.yml up --build --abort-on-container-exit
-
-      - name: Build Docker Image
-        run: docker build -t progressive-overload .
+      - name: E2E Test via Docker Compose
+        run: |
+          docker compose -f docker-compose.e2e.yml up --build --exit-code-from e2e-test-runner
