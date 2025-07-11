@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateChallengeDto } from '../challenges/dto/create-challenge.dto';
 import Redis from 'ioredis';
 
-const REDIS_PRFIX = {
+export const REDIS_PRFIX = {
   cache: (userId: string | number) => `cache:challenge:${userId}`,
   log: (userId: string | number) => `log:challenge:${userId}`,
   pending: (userId: string | number) => `pending:challenge:${userId}`,

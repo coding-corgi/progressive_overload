@@ -24,6 +24,8 @@ interface CreateChallengeDto {
   userId: number;
 }
 
+const accountServiceUrl = process.env.ACCOUNT_SERVICE_URL ?? 'http://localhost:3000';
+
 describe('ChallengeRedisController (e2e)', () => {
   let app: INestApplication;
   let server: Server;
@@ -42,7 +44,7 @@ describe('ChallengeRedisController (e2e)', () => {
     redis = app.get<Redis>('REDIS_CLIENT');
     server = app.getHttpServer() as Server;
 
-    const res = await request('http://account-service:3000')
+    const res = await request(accountServiceUrl)
       .post('/users')
       .send({
         email: `test+${Date.now()}@example.com`,
@@ -60,7 +62,7 @@ describe('ChallengeRedisController (e2e)', () => {
       description: 'This is a test challenge',
       startDate: new Date().toISOString(),
       endDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
-      userId: createdUserId, // 예시 사용자 ID
+      userId: createdUserId,
     };
 
     await request(server).post('/challenges').send(dto).expect(201);

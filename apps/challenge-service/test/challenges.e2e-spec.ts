@@ -23,6 +23,8 @@ interface CreateChallengeDto {
   userId: number;
 }
 
+const accountServiceUrl = process.env.ACCOUNT_SERVICE_URL ?? 'http://localhost:3000';
+
 describe('ChallengeController (e2e)', () => {
   let app: INestApplication;
   let server: Server;
@@ -38,7 +40,7 @@ describe('ChallengeController (e2e)', () => {
     await app.init();
     server = app.getHttpServer() as Server;
 
-    const userRes = await request('http://account-service:3000')
+    const userRes = await request(accountServiceUrl)
       .post('/users')
       .send({
         email: `test+${Date.now()}@example.com`,
@@ -62,7 +64,7 @@ describe('ChallengeController (e2e)', () => {
     const res = await request(server).post('/challenges').send(dto);
     expect(res.status).toBe(201);
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     const challengeList = await request(server).get('/challenges').expect(200);
     const found = (challengeList.body as Challenge[]).find((c) => c.title === dto.title);
@@ -83,7 +85,7 @@ describe('ChallengeController (e2e)', () => {
     const res = await request(server).post('/challenges').send(dto);
     expect(res.status).toBe(201); // 요청은 받되 실제로 생성은 안 됨 (낙관적 응답
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     const challengeList = await request(server).get('/challenges').expect(200);
     const found = (challengeList.body as Challenge[]).find((c) => c.title === dto.title);

@@ -50,6 +50,18 @@ describe('AuthController (e2e)', () => {
     await app.close();
   });
 
+  it('POST /auth/login - 로그인 성공', async () => {
+    const response = await request(server)
+      .post('/auth/login')
+      .send({ email: testEmail, password: testPassword })
+      .expect(201);
+
+    const body = response.body as LoginResponse;
+
+    expect(body.accessToken).toBeDefined();
+    expect(body.refreshToken).toBeDefined();
+  });
+
   it('POST /auth/refresh - 유효한 리프래쉬 토큰으로 새 토큰 발급 ', async () => {
     const response = await request(server)
       .post('/auth/refresh')
@@ -75,5 +87,13 @@ describe('AuthController (e2e)', () => {
     await request(server).post('/auth/logout').set('Authorization', `Bearer ${accessToken}`).expect(201);
 
     await request(server).post('/auth/refresh').set('Authorization', `Bearer ${refreshToken}`).expect(401);
+  });
+
+  it('GET /users/me - 액세스 토큰 없이 요청 시 401', async () => {
+    await request(server).get('/users/me').expect(401);
+  });
+
+  it('GET /users/me - 잘못된 액세스 토큰으로 요청 시 401', async () => {
+    await request(server).get('/users/me').set('Authorization', 'Bearer invalid_token').expect(401);
   });
 });

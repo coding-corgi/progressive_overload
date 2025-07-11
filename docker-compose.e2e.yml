@@ -122,4 +122,5 @@ services:
       JWT_REFRESH_TOKEN_EXPIRATION: 7d
     networks:
       - default
-    command: pnpm test:e2e:challenge
+    command: pnpm test:e2e
+
