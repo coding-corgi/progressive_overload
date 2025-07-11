@@ -2,7 +2,6 @@ version: '3.8'
 services:
   test-mysql:
     image: mysql:8.0
-    container_name: test-mysql
     environment:
       MYSQL_ROOT_PASSWORD: marshall
       MYSQL_DATABASE: progressive_overload
@@ -16,9 +15,6 @@ services:
 
   test-redis:
     image: redis:latest
-    container_name: test-redis
-    ports:
-      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -27,10 +23,6 @@ services:
 
   test-rabbitmq:
     image: rabbitmq:3-management
-    container_name: test-rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: myuser
       RABBITMQ_DEFAULT_PASS: mypassword
@@ -41,7 +33,6 @@ services:
       retries: 10
 
   account-service:
-    container_name: account-service
     build:
       context: .
       dockerfile: Dockerfile
@@ -64,12 +55,9 @@ services:
       JWT_REFRESH_TOKEN_EXPIRATION: 7d
     networks:
       - default
-    ports:
-      - "3000:3000"
     command: pnpm start:prod:account
 
   challenge-service:
-    container_name: challenge-service
     build:
       context: .
       dockerfile: Dockerfile
@@ -90,8 +78,6 @@ services:
       JWT_ACCESS_TOKEN_EXPIRATION: 1h
       JWT_REFRESH_TOKEN_SECRET_KEY: super1234secretkey
       JWT_REFRESH_TOKEN_EXPIRATION: 7d
-    ports:
-      - "3001:3001"
     networks:
       - default      
     command: pnpm start:prod:challenge
@@ -100,7 +86,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: e2e-test-runner
     depends_on:
       test-mysql:
         condition: service_healthy
@@ -120,7 +105,5 @@ services:
       JWT_ACCESS_TOKEN_EXPIRATION: 1h
       JWT_REFRESH_TOKEN_SECRET_KEY: super1234secretkey
       JWT_REFRESH_TOKEN_EXPIRATION: 7d
-    networks:
-      - default
     command: pnpm test:e2e
 
