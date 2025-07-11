@@ -1,31 +1,33 @@
 import { Module, OnApplicationShutdown } from '@nestjs/common';
 import Redis from 'ioredis';
 
+const redisClient = 'REDIS_CLIENT';
 let redis: Redis;
 
 @Module({
   providers: [
     {
-      provide: 'REDIS_CLIENT',
+      provide: redisClient,
       useFactory: () => {
-        redis = new Redis({
-          host: process.env.REDIS_HOST,
-          port: parseInt(process.env.REDIS_PORT || '6379', 10),
-        });
+        const host = process.env.REDIS_HOST ?? 'localhost';
+        const port = parseInt(process.env.REDIS_PORT || '6379', 10);
+        redis = new Redis({ host, port });
+        console.log(`✅ Redis 연결됨: ${host}:${port}`);
         return redis;
       },
     },
   ],
-  exports: ['REDIS_CLIENT'],
+  exports: [redisClient],
 })
 export class RedisModule implements OnApplicationShutdown {
   async onApplicationShutdown() {
-    try {
-      if (redis && redis.status === 'ready') {
+    if (redis?.status === 'ready') {
+      try {
         await redis.quit();
+        console.log('✅ Redis 연결 종료됨');
+      } catch (err) {
+        console.error('❌ Redis 연결 종료 중 오류 발생:', err);
       }
-    } catch (error) {
-      console.error('Error during Redis shutdown:', error);
     }
   }
 }

@@ -7,16 +7,19 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(ChallengeServiceModule);
-
   const configService = app.get(ConfigService);
+
+  const mqUrl = configService.get<string>('ACCOUNT_SERVICE_MQ_URL');
+  if (!mqUrl) {
+    throw new Error('ACCOUNT_SERVICE_MQ_URL is not defined');
+  }
+
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [configService.get<string>('ACCOUNT_SERVICE_MQ_URL')!],
+      urls: [mqUrl],
       queue: 'challenge_queue',
-      queueOptions: {
-        durable: false,
-      },
+      queueOptions: { durable: false },
     },
   });
 
@@ -40,7 +43,8 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.CHALLENGE_SERVICE_PORT ?? 3000);
-  console.log(`🚀 Account Service listening on port ${process.env.CHALLENGE_SERVICE_PORT}`);
+  const port = process.env.CHALLENGE_SERVICE_PORT ?? 3000;
+  await app.listen(port);
+  console.log(`🚀 Challenge Service listening on port ${port}`);
 }
 void bootstrap();

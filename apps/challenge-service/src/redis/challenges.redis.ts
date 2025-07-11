@@ -5,8 +5,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateChallengeDto } from '../challenges/dto/create-challenge.dto';
 import Redis from 'ioredis';
 
-const CHALLENGE_CACHE_PREFIX = 'cache:challenge'; // ✅ 캐시용
-const CHALLENGE_LOG_PREFIX = 'log:challenge'; // ✅ 로그용
+const REDIS_PRFIX = {
+  cache: (userId: string | number) => `cache:challenge:${userId}`,
+  log: (userId: string | number) => `log:challenge:${userId}`,
+  pending: (userId: string | number) => `pending:challenge:${userId}`,
+};
 
 @Injectable()
 export class ChallengeLogsService {
@@ -16,7 +19,7 @@ export class ChallengeLogsService {
   ) {}
 
   async getRecentChallengesLogs(userId: string, count: number = 10) {
-    const cacheKey = `${CHALLENGE_CACHE_PREFIX}:${userId}`;
+    const cacheKey = REDIS_PRFIX.cache(userId);
     const cached = await this.redis.get(cacheKey);
     console.log('[📥] Redis 캐시 조회:', cacheKey);
 
@@ -24,13 +27,13 @@ export class ChallengeLogsService {
       try {
         console.log('[✅] 캐시 HIT');
         return JSON.parse(cached) as Challenge[];
-      } catch {
+      } catch (err) {
+        console.warn('[❌] 캐시 파싱 실패', err);
         await this.redis.del(cacheKey);
       }
     }
 
-    console.log('[❌] 캐시 MISS → DB 조회');
-
+    console.log('[❌] 캐시 MISS, DB 조회');
     const logs = await this.challengeRepository.find({
       where: { userId: Number(userId) },
       order: { createdAt: 'DESC' },
@@ -38,31 +41,34 @@ export class ChallengeLogsService {
     });
 
     await this.redis.set(cacheKey, JSON.stringify(logs), 'EX', 30);
-
     return logs;
   }
 
   async logChallengecreation(challengeId: number, userId: string | number) {
     const timestamp = new Date().toISOString();
-    const key = `${CHALLENGE_LOG_PREFIX}:${userId}`;
+    const key = REDIS_PRFIX.log(userId);
     const value = `${challengeId}|${timestamp}`;
     await this.redis.lpush(key, value);
+    console.log('[📝] 챌린지 생성 로그 저장:', { key, value });
   }
 
   async cachePendingChallenge(userId: string | number, dto: CreateChallengeDto) {
-    const key = `pending:challenge:${userId}`;
-    await this.redis.set(key, JSON.stringify(dto), 'EX', 60); // 60초 TTL 예시
+    const key = REDIS_PRFIX.pending(userId);
+    await this.redis.set(key, JSON.stringify(dto), 'EX', 60);
+    console.log('[🧊] Pending DTO 캐시 저장:', key);
   }
 
-  async getCachedPendingChallenge(userId: string | number): Promise<CreateChallengeDto | null> {
+  async getCachedPendingChallenge(userId: string | number) {
     const key = `pending:challenge:${userId}`;
     const cached = await this.redis.get(key);
     console.log('[🧊] Cached DTO:', cached);
+
     if (!cached) return null;
 
     try {
       return JSON.parse(cached) as CreateChallengeDto;
-    } catch {
+    } catch (err) {
+      console.warn('[❌] 캐시 파싱 실패, 캐시 삭제:', err);
       await this.redis.del(key);
       return null;
     }
