@@ -21,6 +21,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
+    "test:ci": "npm run test:cov",
+
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     
     "test:e2e": "cross-env FORCE_EXIT_DELAY=1000 jest --config=apps/account-service/test/jest-e2e.json && cross-env FORCE_EXIT_DELAY=1000 jest --config=apps/challenge-service/test/jest-e2e.json",
