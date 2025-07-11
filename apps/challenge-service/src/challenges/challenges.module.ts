@@ -3,7 +3,6 @@ import { ChallengeService } from './challenges.service';
 import { ChallengeController } from './challenges.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Challenge } from './entities/challenge.entity';
-import { HttpModule } from '@nestjs/axios';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ChallengeLogsService } from '../redis/challenges.redis';
@@ -12,7 +11,6 @@ import { RedisModule } from '../redis/redis.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Challenge]),
-    HttpModule,
     RedisModule,
     ClientsModule.registerAsync([
       {
