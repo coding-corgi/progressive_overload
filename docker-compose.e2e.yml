@@ -105,5 +105,6 @@ services:
       JWT_ACCESS_TOKEN_EXPIRATION: 1h
       JWT_REFRESH_TOKEN_SECRET_KEY: super1234secretkey
       JWT_REFRESH_TOKEN_EXPIRATION: 7d
-    command: pnpm test:all
+    command: sh -c "sleep 10 && pnpm test:all"
+
 
