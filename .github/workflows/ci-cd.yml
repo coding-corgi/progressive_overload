@@ -47,6 +47,9 @@ jobs:
       
       - name: ✅ Copy env
         run: cp .env.test .env
+        
+      - name: Run E2E Test via Docker Compose
+        run: docker-compose -f docker-compose.e2e.yml up --build --abort-on-container-exit
       
       - name: Run Tests
         run: npm run test:ci
