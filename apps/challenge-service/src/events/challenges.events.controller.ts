@@ -13,7 +13,7 @@ export class ChallengeEventsController {
   ) {}
 
   @EventPattern('user_validated')
-  async handleValidateUser(@Payload() payload: { userId: string }) {
+  async handleUserValidated(@Payload() payload: { userId: string }) {
     console.log('[📥] user_validated 이벤트 수신:', payload.userId);
 
     const cached = await this.challengeLogService.getCachedPendingChallenge(payload.userId);
@@ -30,8 +30,8 @@ export class ChallengeEventsController {
 
     const dto = {
       ...cached,
-      startDate: new Date(cached.startDate),
-      endDate: new Date(cached.endDate),
+      startDate: new Date(cached.startDate).toISOString(),
+      endDate: new Date(cached.endDate).toDateString(),
       userId: Number(payload.userId),
     };
 
@@ -41,6 +41,5 @@ export class ChallengeEventsController {
   @EventPattern('user_not_found')
   handleUserNotFound(@Payload() payload: { userId: string; reason?: string }) {
     console.log(`user not found: ${payload.userId}, reason: ${payload.reason}`);
-    //Todo 챌린지 생성 처리 로그저장
   }
 }
