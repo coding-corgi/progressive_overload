@@ -22,52 +22,51 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 export class ChallengeController {
   constructor(
     private readonly challengeService: ChallengeService,
-    private readonly challengsLogsService: ChallengeLogsService,
+    private readonly challengeLogsService: ChallengeLogsService,
   ) {}
 
-  @ApiOperation({ summary: '챌린지 생성 API' })
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createChallengeDto: CreateChallengeDto) {
-    return this.challengeService.create(createChallengeDto);
+  @ApiOperation({ summary: '챌린지 생성' })
+  async create(@Body() dto: CreateChallengeDto) {
+    return this.challengeService.create(dto);
   }
 
-  @ApiOperation({ summary: '챌린지 전체 조회 API' })
   @Get()
+  @ApiOperation({ summary: '챌린지 전체 조회' })
   async findAll() {
     return await this.challengeService.findAll();
   }
 
-  @ApiOperation({ summary: '챌린지 상세 조회 API' })
   @Get(':id')
+  @ApiOperation({ summary: '챌린지 상세 조회' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    return await this.challengeService.findOne(+id);
+    return await this.challengeService.findOne(id);
   }
 
-  @ApiOperation({ summary: '챌린지 수정 API' })
   @Patch(':id')
-  async update(@Param('id', ParseIntPipe) id: number, @Body() updateChallengeDto: UpdateChallengeDto) {
-    return this.challengeService.update(+id, updateChallengeDto);
+  @ApiOperation({ summary: '챌린지 수정' })
+  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateChallengeDto) {
+    return this.challengeService.update(id, dto);
   }
 
-  @ApiOperation({ summary: '챌린지 삭제 API' })
   @Delete(':id')
+  @ApiOperation({ summary: '챌린지 삭제' })
   async remove(@Param('id', ParseIntPipe) id: number) {
-    return this.challengeService.remove(+id);
+    return this.challengeService.remove(id);
   }
 
   @Get('logs/:userId')
-  @ApiOperation({ summary: '챌린지 생성 로그 조회 API' })
+  @ApiOperation({ summary: '챌린지 생성 로그 조회' })
   async getChallengeLogs(@Param('userId') userId: string, @Query('count') count?: string) {
-    const logs = await this.challengsLogsService.getRecentChallengesLogs(userId, count ? parseInt(count) : 10);
+    const logs = await this.challengeLogsService.getRecentChallengesLogs(userId, count ? parseInt(count) : 10);
+
     return {
       userId,
-      logs: logs.map((log) => {
-        return {
-          challengeId: log.id,
-          createdAt: typeof log.createdAt === 'string' ? log.createdAt : log.createdAt.toISOString(),
-        };
-      }),
+      logs: logs.map((log) => ({
+        challengeId: log.id,
+        createdAt: typeof log.createdAt === 'string' ? log.createdAt : log.createdAt.toISOString(),
+      })),
     };
   }
 }
