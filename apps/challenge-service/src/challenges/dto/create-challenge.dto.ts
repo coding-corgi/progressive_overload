@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsDateString, IsNumber, IsString } from 'class-validator';
 
 export class CreateChallengeDto {
@@ -12,13 +13,14 @@ export class CreateChallengeDto {
 
   @ApiProperty({ description: '챌린지 시작 날짜', type: String, format: 'date-time' })
   @IsDateString()
-  startDate: Date;
+  startDate: string;
 
   @ApiProperty({ description: '챌린지 종료 날짜', type: String, format: 'date-time' })
   @IsDateString()
-  endDate: Date;
+  endDate: string;
 
   @ApiProperty({ description: '챌린지 참여자 ID' })
+  @Type(() => Number)
   @IsNumber()
   userId: number;
 }

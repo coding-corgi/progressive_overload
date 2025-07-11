@@ -1,28 +1,28 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity()
+@Entity('challenges')
 export class Challenge {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   title: string;
 
   @Column({ type: 'text' })
   description: string;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'timestamp' })
   startDate: Date;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'timestamp' })
   endDate: Date;
 
-  @Column()
+  @Column({ type: 'int' })
   userId: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date;
 }
