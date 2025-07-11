@@ -6,6 +6,8 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
+  console.log('[CONFIG]', process.env.DATABASE_URL);
+
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 

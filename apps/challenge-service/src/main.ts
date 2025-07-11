@@ -6,6 +6,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
+  console.log('[CONFIG]', process.env.DATABASE_URL);
+
   const app = await NestFactory.create(ChallengeServiceModule);
   const configService = app.get(ConfigService);
 
