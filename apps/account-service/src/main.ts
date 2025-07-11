@@ -9,14 +9,16 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  const MQ_URL = configService.get<string>('ACCOUNT_SERVICE_MQ_URL');
-  const PORT = configService.get<number>('ACCOUNT_SERVICE_PORT') || 3000;
+  const mqUrl = configService.get<string>('ACCOUNT_SERVICE_MQ_URL');
+  if (!mqUrl) {
+    throw new Error('ACCOUNT_SERVICE_MQ_URL is not defined');
+  }
 
   // MQ 연결 설정
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [MQ_URL!],
+      urls: [mqUrl],
       queue: 'account_queue',
       queueOptions: { durable: false },
     },
@@ -42,6 +44,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  const PORT = configService.get<number>('ACCOUNT_SERVICE_PORT') || 3000;
   await app.listen(PORT);
+  console.log(`🚀 Account Service listening on port ${PORT}`);
 }
 void bootstrap();

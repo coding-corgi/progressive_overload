@@ -11,24 +11,24 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @ApiOperation({ summary: '로그인' })
   @Post('login')
+  @ApiOperation({ summary: '로그인' })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 
+  @Post('refresh')
   @ApiOperation({ summary: '액세스 토큰 재발급 (리프레시 토큰 사용)' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt-refresh'))
-  @Post('refresh')
   refreshTokens(@Req() req: Request & { user: User }) {
     return this.authService.refreshTokens(req.user);
   }
 
+  @Post('logout')
   @ApiOperation({ summary: '로그아웃 (리프레시 토큰 제거)' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @Post('logout')
   async logout(@Req() req: Request & { user: User }) {
     return await this.authService.logout(req.user);
   }

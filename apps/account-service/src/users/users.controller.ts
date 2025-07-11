@@ -17,40 +17,40 @@ interface AuthRequest extends Request {
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @ApiOperation({ summary: '사용자 생성' })
   @Post()
+  @ApiOperation({ summary: '사용자 생성' })
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
-  @ApiOperation({ summary: '사용자 전체 조회' })
   @Get()
+  @ApiOperation({ summary: '사용자 전체 조회' })
   findAll() {
     return this.usersService.findAll();
   }
 
+  @Get('me')
   @ApiOperation({ summary: '내 정보 조회' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @Get('me')
   getMyInfo(@Req() req: AuthRequest) {
     return req.user;
   }
 
-  @ApiOperation({ summary: '사용자 상세 조회' })
   @Get(':id')
+  @ApiOperation({ summary: '사용자 상세 조회' })
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
 
-  @ApiOperation({ summary: '사용자 정보 수정' })
   @Patch(':id')
+  @ApiOperation({ summary: '사용자 정보 수정' })
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
   }
 
-  @ApiOperation({ summary: '사용자 삭제' })
   @Delete(':id')
+  @ApiOperation({ summary: '사용자 삭제' })
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
   }
