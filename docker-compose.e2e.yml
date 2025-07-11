@@ -44,10 +44,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      DATABASE_URL: mysql://myuser:mypassword@test-mysql:3306/progressive_overload
-      ACCOUNT_SERVICE_MQ_URL: amqp://myuser:mypassword@test-rabbitmq:5672
-      CHALLENGE_SERVICE_MQ_URL: amqp://myuser:mypassword@test-rabbitmq:5672
-      REDIS_HOST: test-redis
+      DATABASE_URL: mysql://myuser:mypassword@mysql:3306/progressive_overload
+      ACCOUNT_SERVICE_MQ_URL: amqp://myuser:mypassword@rabbitmq:5672
+      CHALLENGE_SERVICE_MQ_URL: amqp://myuser:mypassword@rabbitmq:5672
+      REDIS_HOST: redis
       REDIS_PORT: 6379
       JWT_ACCESS_TOKEN_SECRET_KEY: supersecretkey
       JWT_ACCESS_TOKEN_EXPIRATION: 1h
@@ -69,10 +69,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      DATABASE_URL: mysql://myuser:mypassword@test-mysql:3306/progressive_overload
-      ACCOUNT_SERVICE_MQ_URL: amqp://myuser:mypassword@test-rabbitmq:5672
-      CHALLENGE_SERVICE_MQ_URL: amqp://myuser:mypassword@test-rabbitmq:5672
-      REDIS_HOST: test-redis
+      DATABASE_URL: mysql://myuser:mypassword@mysql:3306/progressive_overload
+      ACCOUNT_SERVICE_MQ_URL: amqp://myuser:mypassword@rabbitmq:5672
+      CHALLENGE_SERVICE_MQ_URL: amqp://myuser:mypassword@rabbitmq:5672
+      REDIS_HOST: redis
       REDIS_PORT: 6379
       JWT_ACCESS_TOKEN_SECRET_KEY: supersecretkey
       JWT_ACCESS_TOKEN_EXPIRATION: 1h
@@ -94,12 +94,12 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      DATABASE_URL: mysql://myuser:mypassword@test-mysql:3306/progressive_overload
-      ACCOUNT_SERVICE_MQ_URL: amqp://myuser:mypassword@test-rabbitmq:5672
-      CHALLENGE_SERVICE_MQ_URL: amqp://myuser:mypassword@test-rabbitmq:5672
+      DATABASE_URL: mysql://myuser:mypassword@mysql:3306/progressive_overload
+      ACCOUNT_SERVICE_MQ_URL: amqp://myuser:mypassword@rabbitmq:5672
+      CHALLENGE_SERVICE_MQ_URL: amqp://myuser:mypassword@rabbitmq:5672
       ACCOUNT_SERVICE_URL: http://account-service:3000
       CHALLENGE_SERVICE_URL: http://challenge-service:3001
-      REDIS_HOST: test-redis
+      REDIS_HOST: redis
       REDIS_PORT: 6379
       JWT_ACCESS_TOKEN_SECRET_KEY: supersecretkey
       JWT_ACCESS_TOKEN_EXPIRATION: 1h
