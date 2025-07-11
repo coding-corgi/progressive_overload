@@ -12,6 +12,7 @@ jobs:
 
     services:
       mysql:
+        container_name: test-mysql
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: testpass
