@@ -1,6 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { AppModule } from '../src/account-service.module';
+import { AppModule } from '../../src/account-service.module';
 import * as request from 'supertest';
 import { Server } from 'http';
 import { Response } from 'supertest';

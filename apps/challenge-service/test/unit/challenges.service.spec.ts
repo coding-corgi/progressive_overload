@@ -1,9 +1,9 @@
 import { Repository } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ChallengeService } from '../src/challenges/challenges.service';
-import { Challenge } from '../src/challenges/entities/challenge.entity';
-import { ChallengeLogsService } from '../src/redis/challenges.redis';
+import { ChallengeService } from '../../src/challenges/challenges.service';
+import { Challenge } from '../../src/challenges/entities/challenge.entity';
+import { ChallengeLogsService } from '../../src/redis/challenges.redis';
 
 describe('ChallengesService', () => {
   let service: ChallengeService;

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ChallengeEventsController } from '../src/events/challenges.events.controller';
-import { ChallengeService } from '../src/challenges/challenges.service';
-import { ChallengeLogsService } from '../src/redis/challenges.redis';
+import { ChallengeEventsController } from '../../src/events/challenges.events.controller';
+import { ChallengeService } from '../../src/challenges/challenges.service';
+import { ChallengeLogsService } from '../../src/redis/challenges.redis';
 
 describe('ChallengeEventsController', () => {
   let controller: ChallengeEventsController;

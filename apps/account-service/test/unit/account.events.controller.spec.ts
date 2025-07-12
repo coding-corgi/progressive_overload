@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AccountEventsController } from '../src/events/account.events.controller';
-import { UsersService } from '../src/users/users.service';
 import { ClientProxy } from '@nestjs/microservices';
+import { AccountEventsController } from 'apps/account-service/src/events/account.events.controller';
+import { UsersService } from 'apps/account-service/src/users/users.service';
 
 describe('AccountEventsController', () => {
   let controller: AccountEventsController;

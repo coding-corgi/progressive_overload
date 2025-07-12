@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import Redis from 'ioredis';
-import { ChallengeLogsService, REDIS_PRFIX } from '../src/redis/challenges.redis';
-import { RedisModule } from '../src/redis/redis.module';
-import { Challenge } from '../src/challenges/entities/challenge.entity';
+import { ChallengeLogsService, REDIS_PRFIX } from '../../src/redis/challenges.redis';
+import { RedisModule } from '../../src/redis/redis.module';
+import { Challenge } from '../../src/challenges/entities/challenge.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 const mockUserId = 1;

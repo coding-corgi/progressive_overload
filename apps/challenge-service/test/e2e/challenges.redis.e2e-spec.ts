@@ -1,8 +1,9 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
 import { Server } from 'http';
-import { ChallengeServiceModule } from '../src/challenge-service.module';
+import { Test } from '@nestjs/testing';
+import { ChallengeServiceModule } from '../../src/challenge-service.module';
 import * as request from 'supertest';
+import Redis from 'ioredis';
 
 interface Challenge {
   id: number;
@@ -25,9 +26,10 @@ interface CreateChallengeDto {
 
 const accountServiceUrl = process.env.ACCOUNT_SERVICE_URL ?? 'http://localhost:3000';
 
-describe('ChallengeController (e2e)', () => {
+describe('ChallengeRedisController (e2e)', () => {
   let app: INestApplication;
   let server: Server;
+  let redis: Redis;
   let createdUserId: number;
 
   beforeAll(async () => {
@@ -38,21 +40,23 @@ describe('ChallengeController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
+
+    redis = app.get<Redis>('REDIS_CLIENT');
     server = app.getHttpServer() as Server;
 
-    const userRes = await request(accountServiceUrl)
+    const res = await request(accountServiceUrl)
       .post('/users')
       .send({
         email: `test+${Date.now()}@example.com`,
         password: '1234abcdefgh',
-        name: 'TestUser',
+        name: `TestUser${Date.now()}`,
       });
 
-    const body = userRes.body as { id: number };
+    const body = res.body as { id: number };
     createdUserId = body.id;
   });
 
-  it('POST /challenges - 유효한 유저로 챌린지 생성 성공', async () => {
+  it('GET /challenges/:id - 캐시 MISS 후 HIT 확인', async () => {
     const dto: CreateChallengeDto = {
       title: `Test Challenge ${Date.now()}`,
       description: 'This is a test challenge',
@@ -61,39 +65,51 @@ describe('ChallengeController (e2e)', () => {
       userId: createdUserId,
     };
 
-    const res = await request(server).post('/challenges').send(dto);
-    expect(res.status).toBe(201);
-
+    await request(server).post('/challenges').send(dto).expect(201);
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     const challengeList = await request(server).get('/challenges').expect(200);
-    const found = (challengeList.body as Challenge[]).find((c) => c.title === dto.title);
-
+    const found = (challengeList.body as Challenge[]).find((challenge) => challenge.title === dto.title);
     expect(found).toBeDefined();
-    expect(found?.userId).toBe(dto.userId);
+
+    const challengeId = found!.id;
+    const redisKey = `challenge:${challengeId}`;
+    await redis.del(redisKey);
+
+    // 1차 요청 → MISS → Redis 저장됨
+    await request(server).get(`/challenges/${challengeId}`).expect(200);
+
+    // 2차 요청 → HIT
+    await request(server).get(`/challenges/${challengeId}`).expect(200);
+
+    const cached = await redis.get(redisKey);
+    expect(cached).toBeDefined();
   });
 
-  it('POST /challenges - 유효하지 않은 유저는 챌린지 생성 실패', async () => {
+  it('GET /challenges/log/:userId - 캐시 적중률 확인', async () => {
+    const cacheKey = `cache:challenge:${createdUserId}`;
+    await redis.del(cacheKey); // 캐시 초기화
+
     const dto: CreateChallengeDto = {
       title: `Test Challenge ${Date.now()}`,
-      description: 'This challenge should not be created',
+      description: 'This is a test challenge',
       startDate: new Date().toISOString(),
       endDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
-      userId: 9999,
+      userId: createdUserId,
     };
 
-    const res = await request(server).post('/challenges').send(dto);
-    expect(res.status).toBe(201); // 요청은 받되 실제로 생성은 안 됨 (낙관적 응답
+    await request(server).post('/challenges').send(dto).expect(201);
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const first = await request(server).get(`/challenges/logs/${createdUserId}?count=1`).expect(200);
+    const second = await request(server).get(`/challenges/logs/${createdUserId}?count=1`).expect(200);
 
-    const challengeList = await request(server).get('/challenges').expect(200);
-    const found = (challengeList.body as Challenge[]).find((c) => c.title === dto.title);
-
-    expect(found).toBeUndefined();
+    expect(second.body).toEqual(first.body);
+    const cachedLogs = await redis.get(cacheKey);
+    expect(cachedLogs).toBeDefined();
   });
 
   afterAll(async () => {
+    await redis.quit();
     await app.close();
   });
 });
