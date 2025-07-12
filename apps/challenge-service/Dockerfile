@@ -10,4 +10,4 @@ RUN pnpm run build
 
 EXPOSE 3000
 
-CMD ["pnpm", "test:all"]
+CMD ["pnpm", "start:prod:challenge"]

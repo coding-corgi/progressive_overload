@@ -35,7 +35,7 @@ services:
   account-service:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: apps/account-service/Dockerfile
     depends_on:
       mysql:
         condition: service_healthy
@@ -60,7 +60,7 @@ services:
   challenge-service:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: apps/challenge-service/Dockerfile
     depends_on:
       mysql:
         condition: service_healthy

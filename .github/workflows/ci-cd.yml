@@ -8,6 +8,36 @@ on:
 
 jobs:
   ci:
+    name: Fast CI (Lint, Test, Build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Copy test env
+        run: cp .env.test .env
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit Test + Coverage
+        run: npm run test:ci
+
+      - name: Build all services
+        run: npm run build
+    
+  e2e:
+    name: E2E Test with Docker Compose
+    needs: ci
     runs-on: ubuntu-latest
 
     services:
@@ -34,7 +64,7 @@ jobs:
         ports:
           - 5672:5672
           - 15672:15672
-
+    
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -43,16 +73,35 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Install dependencies
-        run: npm install
-
+      
       - name: Copy test env
-        run: cp .env.test .env
-
-      - name: Lint
-        run: npm run lint
-
-      - name: E2E Test via Docker Compose  << 기존 코드 
+        run: cp .env.test .env  
+      
+      - name: E2E Test 
         run: docker compose -f docker-compose.e2e.yml up --build --exit-code-from e2e-test-runner
 
+  deploy:
+    name: Deploy to Github Container Registry
+    needs: e2e
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build and push account-service
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/account-service:latest -f apps/account-service/Dockerfile .
+          docker push ghcr.io/${{ github.repository_owner }}/account-service:latest
+
+      - name: Build and push challenge-service
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/challenge-service:latest -f apps/challenge-service/Dockerfile .
+          docker push ghcr.io/${{ github.repository_owner }}/challenge-service:latest
