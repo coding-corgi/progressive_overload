@@ -22,7 +22,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
 
-    "test:ci": "jest --coverage --testPathIgnorePatterns='e2e-spec.ts'",
+    "test:ci": "jest --coverage apps/**/test/unit",
     "test:redis": "jest --testPathPattern='intergration-redis'",
     "test:e2e": "jest --config=apps/challenge-service/test/jest-e2e.json",
 
