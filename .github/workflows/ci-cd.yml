@@ -5,6 +5,7 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+    workflow_dispatch:
 
 jobs:
   ci:
@@ -121,4 +122,3 @@ jobs:
         run: |
           docker build -t ghcr.io/${{ github.repository_owner }}/challenge-service:latest -f apps/challenge-service/Dockerfile .
           docker push ghcr.io/${{ github.repository_owner }}/challenge-service:latest
-          
