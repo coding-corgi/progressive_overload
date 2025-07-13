@@ -30,26 +30,22 @@
 ## 2. 아키텍처 다이어그램
 ![제목 없는 다이어그램의 복사본 drawio](https://github.com/user-attachments/assets/2a223e60-a337-4d6c-859c-dbd751d11d9d)
 
-- **Account**: 유저, 인증, REST API, MySQL
-- **Challenge**: 챌린지 생성/목록 조회 중심, MySQL+Redis, MQ 이벤트 기반 연동
-- **RabbitMQ**: 서비스 간 비동기 이벤트 메시징 (Loose Coupling)
-
 
 ## 3. 기술 스택 & 인프라
 
 |  기술 | 목적 및 사용 이유 |
 |  :--- | :--- |
 | `TypeScript`  | 타입 안정성, 유지보수성, 대규모 서비스 적합  |
-|  `NestJS` | 모듈화, DI, MSA/DDD 구현에 용이한 아키텍처 |
-|  `MySQL` | 관계형 데이터, 트랜잭션, 일관성|
-|  `TypeORM` |  객체지향적 ORM, DB 추상화, Migration |
-|  `Redis` | 캐시(성장 지표, 인기 피드), QPS 병목 해소로 응답 속도 향상 |
-|  `RabbitMQ` | 서비스 간 비동기 이벤트 통신(EDA), 확장성 |
-|  `Docker` | 로컬/서버 동일 운영환경, 환경 일관성|
-|  `Docker Compose` | 다중 서비스, 빠른 로컬 통합 테스트 |
-|  `GitHub Actions` | CICD, 빌드/테스트/배포 자동화 |
-|  `Jest` | 단위(Unit), 통합(Integration), E2E 테스트를 통한 코드 안정성 확보 |
-|  `Artillery` | 부하 테스트, 실성능 측정 |
+|  `NestJS` | 모듈화, DI, MSA/DDD 아키텍처에 적합 |
+|  `MySQL` | 관계형 데이터, 트랜잭션 지원|
+|  `TypeORM` | DB 추상화 + Migration, NestJS와 적합 |
+|  `Redis` | QPS 병목 해소로 응답 속도 향상 |
+|  `RabbitMQ` | 서비스 간 비동기 이벤트 통신(EDA), 서비스 간 느슨한 결합 구조 |
+|  `Docker` | 로컬/서버 동일 환경 일관성|
+|  `Docker Compose` | 다중 서비스 로컬 실행 및 통합 테스트 |
+|  `GitHub Actions` | CI/CD 자동화 (테스트/빌드/배포) |
+|  `Jest` | 단위(Unit), 통합(Integration), E2E 테스, 안정성 검증 |
+|  `Artillery` | QPS/응답속도/성능 측정 도구 활용 |
 
 
 
