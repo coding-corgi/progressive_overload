@@ -54,7 +54,12 @@
 
 ## 4. Redis 캐시 도입 전후 성능 실험 및 결과 분석
 
-#### 4.1. Redis 캐시 적용 전/후 성능 변화
+#### 4.1. 실험 개요
+- 대상: 챌린지 로그 조회 API
+- 목적: DB 조회 병목 해소 및 성능 향상 여부 검증
+- 방식: Redis 캐시 도입 전/후 동일 조건(3,000 RPS, TTL 30s)에서 성능 측정
+
+#### 4.2. Redis 캐시 적용 전/후 성능 변화
 
 | 지표                       | 캐시 미적용 (DB 직접 조회) | 캐시 적용 (1st miss, 이후 hit) |
 |----------------------------|--------------------------|-------------------------------|
@@ -75,32 +80,20 @@
 > **캐시 적용:** 첫 miss 후 거의 모든 요청이 redis에서 반환 → 평균 1초 이하로 감소
 
 
-#### 4.2. Redis 캐시 info 결과
+#### 4.3. Redis 캐시 info 결과
 
 ```plaintext
 # Stats (INFO)
 keyspace_hits:             49,386
 keyspace_misses:           72,658
 total_commands_processed: 122,563
-total_error_replies:        3,107
+약 40% 이상 캐시 적중률로 실질적 성능 개선 효과
 ```
 
+#### 4.4. 테스트 기반 검증 흐름
 
-#### 4.3. 실험 환경 및 방법
-> 모든 실험은 **Docker compose** 기반 단일 서버(Ryzen 7 2700x, 32GB RAM) 환경
-> **DB/Redis/서비스**  컨테이너 분리, Artillery로 최대 3,000 RPS/20초 부하
-> **Redis 캐시 TTL** 30초, 단일 인스턴스 기준
+> 캐시 miss => db 조회 => Redis 저장 => 이후 hit시 캐시 조회
 
-
-#### 4.4. 실험 결과 요약/인사이트
-
-> “Redis 캐시 도입 후 QPS 3,000 환경에서 DB 병목 구간이 p95=6.4초 → 1초 이하로 크게 개선됨.
-> 실제 장애내성, 응답 속도, 확장성 개선 효과를 수치로 입증.”
-
-
-#### 4.5. 테스트 기반 캐시 검증 + 종료 안정화
-> 실제 캐시 HIT/MISS 동작과 Redis Key 생성 여부를 e2e 테스트로 검증,
-> 테스트 종료 시 리소스 누수 문제를 해결하여 안정성을 확보.
 
 ##### ✅ 캐시 적중 테스트 예시 (Jest e2e)
 
@@ -129,36 +122,34 @@ const cached = await redis.get(cacheKey);
 expect(cached).toBeDefined();
 ```
 
-##### ✅ Redis 종료 누락 문제 해결 (`ioredis` open handle)
+#### 4.5. 실험 환경
+- 환경: **Docker compose** (DB / Redis / App 컨테이너 분리)
+- 부하 도구: Artillery로 최대 3,000 RPS/20초 부하
+- Redis TTL: 30초
+- 로컬 단일 서버 스펙: Ryzen 7 2700x, 32GB RAM
 
-- 전역 Redis 클라이언트 직접 생성 시 Jest 테스트 종료 시점에 리소스가 남는 이슈 발생
-- onApplicationShutdown() 훅에서 redis.quit() 명시하여 안전하게 종료
-- --detectOpenHandles 옵션으로 리소스 누수 없는 종료 검증 가능
+#### 4.6. 실험 결과 요약
+> “Redis 캐시 도입 후 QPS 3,000 환경에서 DB 병목 구간이 p95=6.4초 → 1초 이하로 크게 개선
+> 실제 장애내성, 응답 속도, 캐시 적중률 등 개선 효과를 수치로 입증.”
+
+
+
+#### 4.7. 실험 결과 요약
 
 ```ts
 @Module({...})
 export class RedisModule implements OnApplicationShutdown {
   async onApplicationShutdown() {
     if (redis) {
-      await redis.quit(); // 테스트 종료 시 안전하게 shutdown
+      await redis.quit(); // Jest 종료 시 누수 방지
     }
   }
 }
 ```
-
-##### 🧪 실행 결과 변화 (before → after)
-
+**detectOpenHandles**, **onApplicationShutdown()**을 활용해 E2E 테스트 안정성 확보
 
 
 
-|   상황 |  메세지 |
-|--------|-------|
-| ⛔ 변경 전 | A worker process has failed to exit gracefully... |
-| ✅ 변경 후 | Test Suites: 3 passed, 3 total (no open handles) |
-
-
-> ✅ Redis 캐시 생성 흐름과 테스트 종료 안정성까지 엔드투엔드(e2e) 기반으로 함께 검증하며,
-> 단순 기능을 넘어서 시스템 레벨 안정성까지 테스트로 증명했습니다.
 ## 5. 실행/테스트
 
 ### 🟦 Swagger API 문서
