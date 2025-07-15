@@ -27,7 +27,7 @@
 
 
 ## 2. 아키텍처 다이어그램
-<img src="https://github.com/user-attachments/assets/2a223e60-a337-4d6c-859c-dbd751d11d9d" width="70%" />
+<img width="70%" alt="제목 없는 다이어그램 drawio (2)" src="https://github.com/user-attachments/assets/8f1dd840-f53e-4a62-9c87-6a0acf361979" />
 
 
 ## 3. 기술 스택 및 인프라
