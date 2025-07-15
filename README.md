@@ -27,7 +27,7 @@
 
 
 ## 2. 아키텍처 다이어그램
-![제목 없는 다이어그램의 복사본 drawio](https://github.com/user-attachments/assets/2a223e60-a337-4d6c-859c-dbd751d11d9d)
+<img src="https://github.com/user-attachments/assets/2a223e60-a337-4d6c-859c-dbd751d11d9d" width="70%" />
 
 
 ## 3. 기술 스택 및 인프라
@@ -89,8 +89,8 @@ p95 기준 6.4초 => 1.9초
 - Account Service: http://localhost:3000/api-docs
 - Challenge Service: http://localhost:3001/api-docs
 <p float="left">
-  <img src="https://github.com/user-attachments/assets/dfd0acf2-58c8-4f13-933f-b665087a1b7b" width="49%"/>
-  <img src="https://github.com/user-attachments/assets/029704e3-a4ef-4ad1-a102-d1a4b4ab2e9b" width="49%"/>
+  <img src="https://github.com/user-attachments/assets/dfd0acf2-58c8-4f13-933f-b665087a1b7b" width="50%"/>
+  <img src="https://github.com/user-attachments/assets/029704e3-a4ef-4ad1-a102-d1a4b4ab2e9b" width="44%"/>
 </p>
 
 
@@ -130,6 +130,12 @@ expect(res2.body).toEqual(res1.body);
 const cached = await redis.get(cacheKey);
 expect(cached).toBeDefined();
 ```
+
+### 5.3 Jest 커버리지
+커버리지 75% 이상 유지 목표
+메인 서비스의 분기, 예외 처리까지 테스트
+
+<img width="60%"  alt="{44BF48C0-264F-4B62-9DFC-F301BA79A328}" src="https://github.com/user-attachments/assets/b44c5b54-69e4-49ad-92dd-78f9af764206" />
 
 
 ## 6. 배포 상태
